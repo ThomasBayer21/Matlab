@@ -11,7 +11,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #ff7979 0%, #e74c3c 100%);
             min-height: 100vh;
         }
         .header {
@@ -39,11 +39,11 @@
         .tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: -1px;
             flex-wrap: wrap;
         }
         .tab-button {
-            padding: 12px 24px;
+            padding: 12px 24px 18px 24px;
             background: rgba(255,255,255,0.3);
             border: none;
             border-radius: 8px 8px 0 0;
@@ -59,9 +59,12 @@
             background: white;
             color: #e74c3c;
         }
+        .tab-button:first-child {
+            border-radius: 12px 8px 0 0;
+        }
         .content {
             background: white;
-            border-radius: 12px;
+            border-radius: 0 12px 12px 12px;
             padding: 30px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
@@ -125,7 +128,7 @@
             font-family: 'Courier New', monospace;
             margin: 15px 0;
             overflow-x: auto;
-            white-space: pre;
+            white-space: pre-wrap;
         }
         .code-block .comment {
             color: #75715e;
@@ -147,6 +150,8 @@
             border: 2px solid #e74c3c;
             margin: 15px 0;
             font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
         }
         .matrix-display {
             display: inline-grid;
@@ -220,47 +225,56 @@
                 <h2>Numerische Berechnungen</h2>
                 <p>MATLAB bietet leistungsstarke Funktionen für numerische Differentiation, Integration und Interpolation.</p>
 
-                <h3>Differentiation mit diff()</h3>
                 <div class="interactive-section">
-                    <p>Die Funktion <code>diff()</code> berechnet Differenzen zwischen aufeinanderfolgenden Elementen.</p>
-                    <div class="controls">
-                        <button onclick="demonstrateDiff()">Berechnen</button>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="diffChart"></canvas>
-                    </div>
-                    <div class="code-block" id="diffCode"></div>
-                </div>
-
-                <h3>Integration mit cumsum()</h3>
-                <div class="interactive-section">
-                    <p>Die Funktion <code>cumsum()</code> berechnet die kumulative Summe (numerische Integration).</p>
-                    <div class="controls">
-                        <button onclick="demonstrateCumsum()">Berechnen</button>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="cumsumChart"></canvas>
-                    </div>
-                    <div class="code-block" id="cumsumCode"></div>
-                </div>
-
-                <h3>Interpolation mit interp1()</h3>
-                <div class="interactive-section">
+                    <h3>Interaktive Numerische Operationen</h3>
+                    <p>Wählen Sie eine oder mehrere Funktionen und sehen Sie diff(), cumsum() und interp1() in Aktion:</p>
                     <div class="controls">
                         <div class="control-group">
-                            <label>Interpolationsmethode:</label>
-                            <select id="interpMethod">
+                            <label>Funktion(en) auswählen:</label>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <label><input type="checkbox" value="sin" onchange="updateNumerical()" checked> sin(x)</label>
+                                <label><input type="checkbox" value="cos" onchange="updateNumerical()"> cos(x)</label>
+                                <label><input type="checkbox" value="exp" onchange="updateNumerical()"> exp(x/5)</label>
+                                <label><input type="checkbox" value="poly" onchange="updateNumerical()"> x²</label>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label>Anzahl Datenpunkte:</label>
+                            <input type="range" id="numPoints" min="10" max="50" value="20" oninput="updateNumerical(); document.getElementById('numPointsVal').textContent=this.value;">
+                            <span id="numPointsVal">20</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <h4 style="text-align: center;">Original & Differentiation (diff)</h4>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="diffChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="text-align: center;">Original & Integration (cumsum)</h4>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="cumsumChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top: 20px;">Interpolation (interp1)</h4>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Methode:</label>
+                            <select id="interpMethod" onchange="updateNumerical()">
                                 <option value="linear">Linear</option>
-                                <option value="nearest">Nächster Nachbar</option>
-                                <option value="spline">Spline</option>
+                                <option value="step">Nearest (Stufenfunktion)</option>
                             </select>
                         </div>
-                        <button onclick="demonstrateInterp()">Interpolieren</button>
                     </div>
+                    <p style="font-size: 0.9em; color: #666;">Originaldaten (grob) werden auf feineres Gitter interpoliert:</p>
                     <div class="chart-container">
                         <canvas id="interpChart"></canvas>
                     </div>
-                    <div class="code-block" id="interpCode"></div>
+                    <div class="code-block" id="numericalCode"></div>
                 </div>
 
                 <div class="info-box">
@@ -280,15 +294,23 @@
 
                 <h3>Lineares Gleichungssystem lösen</h3>
                 <div class="interactive-section">
-                    <p>Löse das Gleichungssystem: A·x = b</p>
+                    <p>Löse das Gleichungssystem: A·x = b (3×3 System)</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div class="control-group">
+                            <label>Matrix A (Zeilen mit Semikolon getrennt):</label>
+                            <input type="text" id="matrixA" value="2, 1, -1; -3, -1, 2; -2, 1, 2" style="width: 100%;">
+                        </div>
+                        <div class="control-group">
+                            <label>Vektor b (Kommagetrennt):</label>
+                            <input type="text" id="vectorB" value="8, -11, -3" style="width: 100%;">
+                        </div>
+                    </div>
                     <div class="controls">
                         <button onclick="solveLinearSystem()">Lösen</button>
                     </div>
                     <div id="linSysDisplay"></div>
                     <div class="result-display" id="linSysResult"></div>
-                    <div class="code-block">A = [2, 1, -1; -3, -1, 2; -2, 1, 2];
-b = [8; -11; -3];
-x = A \ b  <span class="comment">% Backslash-Operator löst A·x = b</span></div>
+                    <div class="code-block" id="linSysCode"></div>
                 </div>
 
                 <h3>Matrix-Operationen</h3>
@@ -535,55 +557,121 @@ rad2deg(pi)   <span class="comment">% = 180</span></div>
             event.target.classList.add('active');
         }
 
-        function demonstrateDiff() {
-            const x = Array.from({length: 20}, (_, i) => i);
-            const y = x.map(v => Math.sin(v / 3) * 5);
-            const dy = [];
-            for (let i = 1; i < y.length; i++) {
-                dy.push(y[i] - y[i-1]);
+        function updateNumerical() {
+            // Hole ausgewählte Funktionen
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            const selectedFuncs = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedFuncs.length === 0) {
+                return;
             }
+
+            const numPoints = parseInt(document.getElementById('numPoints').value);
+            const interpMethod = document.getElementById('interpMethod').value;
+
+            // Generiere Daten
+            const x = Array.from({length: numPoints}, (_, i) => i * 10 / (numPoints - 1));
+
+            // Erstelle Datasets für jede ausgewählte Funktion
+            const colors = {
+                sin: '#e74c3c',
+                cos: '#3498db',
+                exp: '#9b59b6',
+                poly: '#e67e22'
+            };
+
+            const funcNames = {
+                sin: 'sin(x)',
+                cos: 'cos(x)',
+                exp: 'exp(x/5)',
+                poly: 'x²'
+            };
+
+            // Code-String
+            let code = '% Numerische Operationen\n';
+            code += `x = linspace(0, 10, ${numPoints});\n\n`;
+
+            // === DIFF CHART ===
+            const diffDatasets = [];
+            selectedFuncs.forEach(func => {
+                let y;
+                switch(func) {
+                    case 'sin': y = x.map(v => Math.sin(v)); code += `y_sin = sin(x);\n`; break;
+                    case 'cos': y = x.map(v => Math.cos(v)); code += `y_cos = cos(x);\n`; break;
+                    case 'exp': y = x.map(v => Math.exp(v / 5)); code += `y_exp = exp(x/5);\n`; break;
+                    case 'poly': y = x.map(v => v * v / 20); code += `y_poly = x.^2 / 20;\n`; break;
+                }
+
+                const dy = [];
+                for (let i = 1; i < y.length; i++) {
+                    dy.push(y[i] - y[i-1]);
+                }
+
+                diffDatasets.push({
+                    label: funcNames[func],
+                    data: y,
+                    borderColor: colors[func],
+                    fill: false,
+                    pointRadius: 0
+                });
+                diffDatasets.push({
+                    label: `diff(${funcNames[func]})`,
+                    data: dy,
+                    borderColor: colors[func],
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
+                });
+            });
 
             if (diffChart) diffChart.destroy();
             diffChart = new Chart(document.getElementById('diffChart'), {
                 type: 'line',
                 data: {
-                    labels: x.slice(1),
-                    datasets: [{
-                        label: 'Original y',
-                        data: y.slice(1),
-                        borderColor: '#e74c3c',
-                        yAxisID: 'y'
-                    }, {
-                        label: 'diff(y) - Ableitung',
-                        data: dy,
-                        borderColor: '#3498db',
-                        yAxisID: 'y1'
-                    }]
+                    labels: x,
+                    datasets: diffDatasets
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: { type: 'linear', position: 'left' },
-                        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
-                    }
+                    plugins: { legend: { display: true } }
                 }
             });
 
-            document.getElementById('diffCode').textContent =
-                'y = sin(x / 3) * 5;\n' +
-                'dy = diff(y);  % Differenzen berechnen\n' +
-                '% Länge von dy ist length(y) - 1';
-        }
+            // === CUMSUM CHART ===
+            const cumsumDatasets = [];
+            selectedFuncs.forEach(func => {
+                let y;
+                switch(func) {
+                    case 'sin': y = x.map(v => Math.sin(v)); break;
+                    case 'cos': y = x.map(v => Math.cos(v)); break;
+                    case 'exp': y = x.map(v => Math.exp(v / 5)); break;
+                    case 'poly': y = x.map(v => v * v / 20); break;
+                }
 
-        function demonstrateCumsum() {
-            const x = Array.from({length: 20}, (_, i) => i);
-            const y = Array(20).fill(0).map(() => Math.random() * 2 - 1);
-            const cumY = [];
-            let sum = 0;
-            y.forEach(v => {
-                sum += v;
-                cumY.push(sum);
+                const cumY = [];
+                let sum = 0;
+                y.forEach(v => {
+                    sum += v;
+                    cumY.push(sum);
+                });
+
+                cumsumDatasets.push({
+                    label: funcNames[func],
+                    data: y,
+                    borderColor: colors[func],
+                    fill: false,
+                    pointRadius: 0
+                });
+                cumsumDatasets.push({
+                    label: `cumsum(${funcNames[func]})`,
+                    data: cumY,
+                    borderColor: colors[func],
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0,
+                    borderWidth: 2
+                });
             });
 
             if (cumsumChart) cumsumChart.destroy();
@@ -591,138 +679,208 @@ rad2deg(pi)   <span class="comment">% = 180</span></div>
                 type: 'line',
                 data: {
                     labels: x,
-                    datasets: [{
-                        label: 'Original y',
-                        data: y,
-                        borderColor: '#e74c3c',
-                        yAxisID: 'y',
-                        type: 'bar'
-                    }, {
-                        label: 'cumsum(y) - Integral',
-                        data: cumY,
-                        borderColor: '#2ecc71',
-                        yAxisID: 'y1',
-                        fill: false
-                    }]
+                    datasets: cumsumDatasets
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: { type: 'linear', position: 'left' },
-                        y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
-                    }
+                    plugins: { legend: { display: true } }
                 }
             });
 
-            document.getElementById('cumsumCode').textContent =
-                'y = randn(1, 20);  % Zufallswerte\n' +
-                'cumY = cumsum(y);  % Kumulative Summe';
-        }
+            // === INTERPOLATION CHART ===
+            const interpDatasets = [];
 
-        function demonstrateInterp() {
-            const method = document.getElementById('interpMethod').value;
-            const x = [0, 2, 4, 6, 8, 10];
-            const y = [1, 3, 2, 5, 4, 6];
+            // Nimm nur jeden 4. Punkt als Original-Datenpunkte
+            const xSparse = x.filter((_, i) => i % 4 === 0);
+            const xFine = Array.from({length: numPoints * 4}, (_, i) => i * 10 / (numPoints * 4 - 1));
 
-            const xq = Array.from({length: 100}, (_, i) => i / 10);
-            let yq;
+            selectedFuncs.forEach(func => {
+                let ySparse;
+                switch(func) {
+                    case 'sin': ySparse = xSparse.map(v => Math.sin(v)); break;
+                    case 'cos': ySparse = xSparse.map(v => Math.cos(v)); break;
+                    case 'exp': ySparse = xSparse.map(v => Math.exp(v / 5)); break;
+                    case 'poly': ySparse = xSparse.map(v => v * v / 20); break;
+                }
 
-            if (method === 'linear') {
-                yq = xq.map(xv => {
-                    for (let i = 0; i < x.length - 1; i++) {
-                        if (xv >= x[i] && xv <= x[i+1]) {
-                            const t = (xv - x[i]) / (x[i+1] - x[i]);
-                            return y[i] + t * (y[i+1] - y[i]);
+                // Interpoliere
+                let yFine;
+                if (interpMethod === 'linear') {
+                    yFine = xFine.map(xv => {
+                        for (let i = 0; i < xSparse.length - 1; i++) {
+                            if (xv >= xSparse[i] && xv <= xSparse[i+1]) {
+                                const t = (xv - xSparse[i]) / (xSparse[i+1] - xSparse[i]);
+                                return ySparse[i] + t * (ySparse[i+1] - ySparse[i]);
+                            }
                         }
-                    }
-                    return null;
-                });
-            } else if (method === 'nearest') {
-                yq = xq.map(xv => {
-                    let minDist = Infinity;
-                    let nearest = 0;
-                    x.forEach((xp, i) => {
-                        const dist = Math.abs(xv - xp);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            nearest = i;
-                        }
+                        return ySparse[ySparse.length - 1];
                     });
-                    return y[nearest];
+                } else { // step
+                    yFine = xFine.map(xv => {
+                        let minDist = Infinity;
+                        let nearest = 0;
+                        xSparse.forEach((xp, i) => {
+                            const dist = Math.abs(xv - xp);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                nearest = i;
+                            }
+                        });
+                        return ySparse[nearest];
+                    });
+                }
+
+                interpDatasets.push({
+                    label: `${funcNames[func]} (Original)`,
+                    data: xSparse.map((xv, i) => ({ x: xv, y: ySparse[i] })),
+                    borderColor: colors[func],
+                    backgroundColor: colors[func],
+                    pointRadius: 6,
+                    showLine: false
                 });
-            } else {
-                yq = xq.map(xv => {
-                    for (let i = 0; i < x.length - 1; i++) {
-                        if (xv >= x[i] && xv <= x[i+1]) {
-                            const t = (xv - x[i]) / (x[i+1] - x[i]);
-                            return y[i] + t * (y[i+1] - y[i]);
-                        }
-                    }
-                    return null;
+                interpDatasets.push({
+                    label: `interp1 (${interpMethod})`,
+                    data: xFine.map((xv, i) => ({ x: xv, y: yFine[i] })),
+                    borderColor: colors[func],
+                    pointRadius: 0,
+                    fill: false
                 });
-            }
+            });
 
             if (interpChart) interpChart.destroy();
             interpChart = new Chart(document.getElementById('interpChart'), {
                 type: 'line',
-                data: {
-                    datasets: [{
-                        label: 'Original Datenpunkte',
-                        data: x.map((xv, i) => ({ x: xv, y: y[i] })),
-                        borderColor: '#e74c3c',
-                        backgroundColor: '#e74c3c',
-                        pointRadius: 8,
-                        showLine: false
-                    }, {
-                        label: 'Interpoliert (' + method + ')',
-                        data: xq.map((xv, i) => ({ x: xv, y: yq[i] })),
-                        borderColor: '#3498db',
-                        pointRadius: 0,
-                        fill: false
-                    }]
-                },
+                data: { datasets: interpDatasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
                         x: { type: 'linear' },
                         y: { type: 'linear' }
-                    }
+                    },
+                    plugins: { legend: { display: true } }
                 }
             });
 
-            document.getElementById('interpCode').textContent =
-                `x = [0, 2, 4, 6, 8, 10];\n` +
-                `y = [1, 3, 2, 5, 4, 6];\n` +
-                `xq = 0:0.1:10;\n` +
-                `yq = interp1(x, y, xq, '${method}');`;
+            // Code
+            code += `\n% Differentiation\n`;
+            selectedFuncs.forEach(func => {
+                code += `dy_${func} = diff(y_${func});\n`;
+            });
+
+            code += `\n% Integration (kumulative Summe)\n`;
+            selectedFuncs.forEach(func => {
+                code += `cumY_${func} = cumsum(y_${func});\n`;
+            });
+
+            code += `\n% Interpolation\n`;
+            code += `x_sparse = x(1:4:end);  % Jeder 4. Punkt\n`;
+            selectedFuncs.forEach(func => {
+                code += `y_sparse = y_${func}(1:4:end);\n`;
+            });
+            code += `x_fine = linspace(0, 10, ${numPoints * 4});\n`;
+            code += `y_interp = interp1(x_sparse, y_sparse, x_fine, '${interpMethod}');`;
+
+            document.getElementById('numericalCode').textContent = code;
         }
 
         function solveLinearSystem() {
-            const A = [[2, 1, -1], [-3, -1, 2], [-2, 1, 2]];
-            const b = [8, -11, -3];
+            try {
+                // Parse Eingaben
+                const matrixAStr = document.getElementById('matrixA').value;
+                const vectorBStr = document.getElementById('vectorB').value;
 
-            // Simple Gauss elimination for demo
-            const x = [2, 3, -1]; // Pre-calculated solution
+                const A = matrixAStr.split(';').map(row =>
+                    row.split(',').map(v => parseFloat(v.trim()))
+                );
+                const b = vectorBStr.split(',').map(v => parseFloat(v.trim()));
 
-            let html = '<div style="display: flex; gap: 20px; align-items: center;">';
-            html += '<div class="matrix-label">A =</div>';
-            html += '<div class="matrix-display" style="grid-template-columns: repeat(3, 60px);">';
-            A.forEach(row => row.forEach(v => html += `<div class="matrix-cell">${v}</div>`));
-            html += '</div>';
+                // Validierung
+                if (A.length !== 3 || A.some(row => row.length !== 3)) {
+                    alert('Matrix A muss 3×3 sein!');
+                    return;
+                }
+                if (b.length !== 3) {
+                    alert('Vektor b muss 3 Elemente haben!');
+                    return;
+                }
 
-            html += '<div class="matrix-label">b =</div>';
-            html += '<div class="matrix-display" style="grid-template-columns: 60px;">';
-            b.forEach(v => html += `<div class="matrix-cell">${v}</div>`);
-            html += '</div>';
-            html += '</div>';
+                // Determinante berechnen (für 3x3)
+                function det3x3(m) {
+                    return m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+                           m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+                           m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+                }
 
-            document.getElementById('linSysDisplay').innerHTML = html;
-            document.getElementById('linSysResult').innerHTML =
-                'Lösung x:\n' +
-                x.map((v, i) => `x${i+1} = ${v}`).join('\n') +
-                '\n\nVerifikation: A * x = b ✓';
+                const detA = det3x3(A);
+
+                if (Math.abs(detA) < 1e-10) {
+                    document.getElementById('linSysResult').textContent =
+                        'Fehler: Matrix A ist singulär (det(A) = 0)\nKeine eindeutige Lösung!';
+                    return;
+                }
+
+                // Cramers Regel: x_i = det(A_i) / det(A)
+                const x = [];
+                for (let i = 0; i < 3; i++) {
+                    const Ai = A.map(row => [...row]);
+                    for (let j = 0; j < 3; j++) {
+                        Ai[j][i] = b[j];
+                    }
+                    x.push(det3x3(Ai) / detA);
+                }
+
+                // Anzeige
+                let html = '<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">';
+                html += '<div><strong>Matrix A:</strong>';
+                html += '<div class="matrix-display" style="grid-template-columns: repeat(3, 60px);">';
+                A.forEach(row => row.forEach(v => html += `<div class="matrix-cell">${v}</div>`));
+                html += '</div></div>';
+
+                html += '<div><strong>Vektor b:</strong>';
+                html += '<div class="matrix-display" style="grid-template-columns: 60px;">';
+                b.forEach(v => html += `<div class="matrix-cell">${v}</div>`);
+                html += '</div></div>';
+
+                html += '<div><strong>Lösung x:</strong>';
+                html += '<div class="matrix-display" style="grid-template-columns: 80px;">';
+                x.forEach(v => html += `<div class="matrix-cell" style="background: #2ecc71; color: white;">${v.toFixed(3)}</div>`);
+                html += '</div></div>';
+                html += '</div>';
+
+                document.getElementById('linSysDisplay').innerHTML = html;
+
+                // Verifikation
+                const verify = [];
+                for (let i = 0; i < 3; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < 3; j++) {
+                        sum += A[i][j] * x[j];
+                    }
+                    verify.push(sum);
+                }
+
+                const isCorrect = verify.every((v, i) => Math.abs(v - b[i]) < 0.001);
+
+                document.getElementById('linSysResult').textContent =
+                    'Lösung x:\n' +
+                    x.map((v, i) => `x${i+1} = ${v.toFixed(6)}`).join('\n') +
+                    '\n\nVerifikation: A * x = ' +
+                    `[${verify.map(v => v.toFixed(3)).join(', ')}]` +
+                    (isCorrect ? ' ✓' : ' ✗');
+
+                // Code
+                const matStr = A.map(row => row.join(', ')).join('; ');
+                document.getElementById('linSysCode').textContent =
+                    `A = [${matStr}];\n` +
+                    `b = [${b.join('; ')}];\n` +
+                    `x = A \\ b  % Backslash-Operator löst A·x = b\n` +
+                    `% Lösung: x = [${x.map(v => v.toFixed(3)).join('; ')}]`;
+
+            } catch (error) {
+                alert('Fehler beim Parsen der Eingabe: ' + error.message);
+            }
         }
 
         function calculateMatrix() {
@@ -802,33 +960,93 @@ rad2deg(pi)   <span class="comment">% = 180</span></div>
             canvas.height = canvas.offsetHeight;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.translate(canvas.width / 2, canvas.height / 2);
 
-            const scale = 50;
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const scale = 40;
 
-            // Draw axes
-            ctx.strokeStyle = '#ddd';
+            // Isometrische Projektion: 3D -> 2D
+            function project3D(x, y, z) {
+                // Isometrische Projektion: rotiere um Y und X Achse
+                const isoX = (x - z) * Math.cos(Math.PI / 6);
+                const isoY = y + (x + z) * Math.sin(Math.PI / 6);
+                return {
+                    x: cx + isoX * scale,
+                    y: cy - isoY * scale
+                };
+            }
+
+            // Zeichne 3D-Achsen
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+
+            // X-Achse (rot)
+            let p1 = project3D(0, 0, 0);
+            let p2 = project3D(3, 0, 0);
+            ctx.strokeStyle = '#ffcccc';
             ctx.beginPath();
-            ctx.moveTo(-canvas.width/2, 0);
-            ctx.lineTo(canvas.width/2, 0);
-            ctx.moveTo(0, -canvas.height/2);
-            ctx.lineTo(0, canvas.height/2);
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
             ctx.stroke();
+            ctx.fillStyle = '#888';
+            ctx.font = '12px Arial';
+            ctx.fillText('X', p2.x + 5, p2.y);
 
-            // Draw vector a
+            // Y-Achse (grün)
+            p2 = project3D(0, 3, 0);
+            ctx.strokeStyle = '#ccffcc';
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+            ctx.fillText('Y', p2.x, p2.y - 5);
+
+            // Z-Achse (blau)
+            p2 = project3D(0, 0, 3);
+            ctx.strokeStyle = '#ccccff';
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+            ctx.fillText('Z', p2.x + 5, p2.y);
+
+            ctx.setLineDash([]);
+
+            // Zeichne Vektoren
+            const origin = project3D(0, 0, 0);
+
+            // Vektor a (rot)
+            const endA = project3D(a[0], a[1], a[2]);
             ctx.strokeStyle = '#e74c3c';
             ctx.lineWidth = 3;
-            drawArrow(ctx, 0, 0, a[0] * scale, -a[1] * scale);
+            drawArrow(ctx, origin.x, origin.y, endA.x, endA.y);
+            ctx.fillStyle = '#e74c3c';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('a', endA.x + 10, endA.y);
 
-            // Draw vector b
+            // Vektor b (blau)
+            const endB = project3D(b[0], b[1], b[2]);
             ctx.strokeStyle = '#3498db';
-            drawArrow(ctx, 0, 0, b[0] * scale, -b[1] * scale);
+            drawArrow(ctx, origin.x, origin.y, endB.x, endB.y);
+            ctx.fillStyle = '#3498db';
+            ctx.fillText('b', endB.x + 10, endB.y);
 
-            // Draw vector c (simplified 2D projection)
+            // Kreuzprodukt c (grün)
+            const endC = project3D(c[0], c[1], c[2]);
             ctx.strokeStyle = '#2ecc71';
-            drawArrow(ctx, 0, 0, c[0] * scale, -c[1] * scale);
+            ctx.lineWidth = 4;
+            drawArrow(ctx, origin.x, origin.y, endC.x, endC.y);
+            ctx.fillStyle = '#2ecc71';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('a × b', endC.x + 10, endC.y);
 
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            // Legende
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.fillText('Isometrische 3D-Ansicht', 10, 20);
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillText('⬤ Kreuzprodukt steht ⊥ zu a und b', 10, canvas.height - 10);
         }
 
         function drawArrow(ctx, x1, y1, x2, y2) {
@@ -874,27 +1092,40 @@ rad2deg(pi)   <span class="comment">% = 180</span></div>
                 `${funcName}(${input}) = ${result.toFixed(6)}\n\n` +
                 `MATLAB Code: ${funcName}(${input})`;
 
-            updateTrigChart(func);
+            updateTrigChart(func, unit);
         }
 
-        function updateTrigChart(func) {
-            const x = Array.from({length: 360}, (_, i) => i);
+        function updateTrigChart(func, unit) {
+            const isDeg = unit === 'deg';
+            const points = isDeg ? 360 : 628; // 628 ≈ 2π * 100
+            const x = Array.from({length: points}, (_, i) => isDeg ? i : i / 100);
             let y;
 
-            switch(func) {
-                case 'sin': y = x.map(v => Math.sin(v * Math.PI / 180)); break;
-                case 'cos': y = x.map(v => Math.cos(v * Math.PI / 180)); break;
-                case 'tan': y = x.map(v => {
-                    const t = Math.tan(v * Math.PI / 180);
-                    return Math.abs(t) > 10 ? null : t;
-                }); break;
+            if (isDeg) {
+                switch(func) {
+                    case 'sin': y = x.map(v => Math.sin(v * Math.PI / 180)); break;
+                    case 'cos': y = x.map(v => Math.cos(v * Math.PI / 180)); break;
+                    case 'tan': y = x.map(v => {
+                        const t = Math.tan(v * Math.PI / 180);
+                        return Math.abs(t) > 10 ? null : t;
+                    }); break;
+                }
+            } else {
+                switch(func) {
+                    case 'sin': y = x.map(v => Math.sin(v)); break;
+                    case 'cos': y = x.map(v => Math.cos(v)); break;
+                    case 'tan': y = x.map(v => {
+                        const t = Math.tan(v);
+                        return Math.abs(t) > 10 ? null : t;
+                    }); break;
+                }
             }
 
             if (trigChart) trigChart.destroy();
             trigChart = new Chart(document.getElementById('trigChart'), {
                 type: 'line',
                 data: {
-                    labels: x,
+                    labels: x.map(v => v.toFixed(isDeg ? 0 : 2)),
                     datasets: [{
                         label: func + '(x)',
                         data: y,
@@ -908,7 +1139,10 @@ rad2deg(pi)   <span class="comment">% = 180</span></div>
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { title: { display: true, text: 'Winkel (°)' } },
+                        x: {
+                            title: { display: true, text: isDeg ? 'Winkel (°)' : 'Winkel (rad)' },
+                            ticks: { maxTicksLimit: 12 }
+                        },
                         y: { title: { display: true, text: func + '(x)' }, min: -2, max: 2 }
                     }
                 }
@@ -935,9 +1169,7 @@ rad2deg(pi)   <span class="comment">% = 180</span></div>
 
         // Initialisierung
         window.onload = function() {
-            demonstrateDiff();
-            demonstrateCumsum();
-            demonstrateInterp();
+            updateNumerical();
             solveLinearSystem();
             calculateMatrix();
             calculateDot();

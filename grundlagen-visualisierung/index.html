@@ -10,7 +10,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
             min-height: 100vh;
         }
         .header {
@@ -38,11 +38,11 @@
         .tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: -1px;
             flex-wrap: wrap;
         }
         .tab-button {
-            padding: 12px 24px;
+            padding: 12px 24px 18px 24px;
             background: rgba(255,255,255,0.2);
             border: none;
             border-radius: 8px 8px 0 0;
@@ -58,9 +58,12 @@
             background: white;
             color: #667eea;
         }
+        .tab-button:first-child {
+            border-radius: 12px 8px 0 0;
+        }
         .content {
             background: white;
-            border-radius: 12px;
+            border-radius: 0 12px 12px 12px;
             padding: 30px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
@@ -126,6 +129,16 @@
             white-space: pre;
             overflow-x: auto;
         }
+        .result-display {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid #667eea;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
         .matrix-grid {
             display: inline-grid;
             gap: 5px;
@@ -160,6 +173,7 @@
             font-family: 'Courier New', monospace;
             margin: 15px 0;
             overflow-x: auto;
+            white-space: pre-wrap;
         }
         .code-block .comment {
             color: #75715e;
@@ -247,6 +261,7 @@
             <button class="tab-button" onclick="showTab('matrizen')">Matrizen</button>
             <button class="tab-button" onclick="showTab('indizierung')">Indizierung</button>
             <button class="tab-button" onclick="showTab('operationen')">Operationen</button>
+            <button class="tab-button" onclick="showTab('funktionen')">Wichtige Funktionen</button>
         </div>
 
         <div class="content">
@@ -465,6 +480,154 @@ e = <span class="keyword">false</span></div>
                     <code>A .^ 2</code> - Jedes Element quadriert
                 </div>
             </div>
+
+            <!-- Wichtige Funktionen Tab -->
+            <div id="funktionen" class="tab-content">
+                <h2>Wichtige MATLAB-Funktionen</h2>
+                <p>Essenzielle Funktionen für die Arbeit mit Arrays und Daten in MATLAB.</p>
+
+                <h3>sum() - Summe berechnen</h3>
+                <div class="interactive-section">
+                    <p>Berechnet die Summe von Elementen in einem Array.</p>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Array (kommagetrennt):</label>
+                            <input type="text" id="sumArray" value="1, 2, 3, 4, 5" style="min-width: 200px;">
+                        </div>
+                        <button onclick="demonstrateSum()">Berechnen</button>
+                    </div>
+                    <div class="result-display" id="sumResult"></div>
+                    <div class="code-block">v = [1, 2, 3, 4, 5];
+sum(v)          <span class="comment">% Summe aller Elemente: 15</span>
+sum(v > 2)      <span class="comment">% Anzahl Elemente > 2: 3</span>
+sum(v(v > 2))   <span class="comment">% Summe der Elemente > 2: 12</span></div>
+                </div>
+
+                <h3>find() - Indizes finden</h3>
+                <div class="interactive-section">
+                    <p>Findet Indizes von Elementen, die eine Bedingung erfüllen.</p>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Array:</label>
+                            <input type="text" id="findArray" value="5, 2, 8, 1, 9, 3" style="min-width: 200px;">
+                        </div>
+                        <div class="control-group">
+                            <label>Bedingung:</label>
+                            <select id="findCondition">
+                                <option value=">5">> 5</option>
+                                <option value="<5">< 5</option>
+                                <option value="==5">== 5</option>
+                                <option value=">=5">>=  5</option>
+                            </select>
+                        </div>
+                        <button onclick="demonstrateFind()">Finden</button>
+                    </div>
+                    <div class="result-display" id="findResult"></div>
+                    <div class="code-block">v = [5, 2, 8, 1, 9, 3];
+idx = find(v > 5)    <span class="comment">% Indizes: [3, 5]</span>
+v(idx)               <span class="comment">% Werte: [8, 9]</span></div>
+                </div>
+
+                <h3>linspace() - Gleichmäßig verteilte Werte</h3>
+                <div class="interactive-section">
+                    <p>Erstellt einen Vektor mit gleichmäßig verteilten Werten zwischen Start und Ende.</p>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Start:</label>
+                            <input type="number" id="linStart" value="0" step="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label>Ende:</label>
+                            <input type="number" id="linEnd" value="10" step="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label>Anzahl Punkte:</label>
+                            <input type="number" id="linPoints" value="11" min="2">
+                        </div>
+                        <button onclick="demonstrateLinspace()">Generieren</button>
+                    </div>
+                    <div id="linspaceDisplay"></div>
+                    <div class="code-block" id="linspaceCode"></div>
+                </div>
+
+                <h3>randi() - Zufällige Ganzzahlen</h3>
+                <div class="interactive-section">
+                    <p>Generiert zufällige Ganzzahlen in einem bestimmten Bereich.</p>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Maximum:</label>
+                            <input type="number" id="randiMax" value="10" min="1">
+                        </div>
+                        <div class="control-group">
+                            <label>Zeilen:</label>
+                            <input type="number" id="randiRows" value="1" min="1" max="5">
+                        </div>
+                        <div class="control-group">
+                            <label>Spalten:</label>
+                            <input type="number" id="randiCols" value="10" min="1" max="10">
+                        </div>
+                        <button onclick="demonstrateRandi()">Generieren</button>
+                    </div>
+                    <div id="randiDisplay"></div>
+                    <div class="code-block">A = randi(10, 1, 5)  <span class="comment">% Zufällige Zahlen 1-10</span>
+B = randi([5,15], 2, 3)  <span class="comment">% Zahlen zwischen 5 und 15</span></div>
+                </div>
+
+                <h3>NaN - Not a Number</h3>
+                <div class="interactive-section">
+                    <p><code>NaN</code> repräsentiert fehlende oder undefinierte Werte.</p>
+                    <div class="code-block">v = [1, 2, NaN, 4, NaN, 6];
+
+<span class="comment">% Prüfen auf NaN</span>
+isnan(v)         <span class="comment">% [false, false, true, false, true, false]</span>
+
+<span class="comment">% NaN entfernen</span>
+v_clean = v(~isnan(v))  <span class="comment">% [1, 2, 4, 6]</span>
+
+<span class="comment">% Mit NaN rechnen</span>
+sum(v)           <span class="comment">% NaN (ein NaN macht alles zu NaN!)</span>
+sum(v, 'omitnan') <span class="comment">% 13 (ignoriert NaN)</span>
+mean(v, 'omitnan') <span class="comment">% 3.25</span></div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Array mit NaN (z.B. 1,2,NaN,4):</label>
+                            <input type="text" id="nanArray" value="1, 2, NaN, 4, NaN, 6" style="min-width: 250px;">
+                        </div>
+                        <button onclick="demonstrateNaN()">Auswerten</button>
+                    </div>
+                    <div class="result-display" id="nanResult"></div>
+                </div>
+
+                <h3>histcounts() - Histogramm-Daten</h3>
+                <div class="interactive-section">
+                    <p>Zählt Elemente in definierten Intervallen (Bins).</p>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Anzahl Datenpunkte:</label>
+                            <input type="number" id="histN" value="100" min="10" max="1000">
+                        </div>
+                        <div class="control-group">
+                            <label>Anzahl Bins:</label>
+                            <input type="number" id="histBins" value="10" min="3" max="20">
+                        </div>
+                        <button onclick="demonstrateHistcounts()">Generieren</button>
+                    </div>
+                    <div id="histDisplay" style="height: 300px; margin: 20px 0;"></div>
+                    <div class="code-block" id="histCode"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Weitere wichtige Funktionen:</strong><br>
+                    <code>length(v)</code> - Anzahl Elemente<br>
+                    <code>size(A)</code> - Dimensionen einer Matrix<br>
+                    <code>numel(A)</code> - Gesamtanzahl Elemente<br>
+                    <code>unique(v)</code> - Eindeutige Werte<br>
+                    <code>sort(v)</code> - Sortieren<br>
+                    <code>max(v)</code>, <code>min(v)</code> - Maximum/Minimum<br>
+                    <code>mean(v)</code>, <code>median(v)</code>, <code>std(v)</code> - Statistik
+                </div>
+            </div>
         </div>
     </div>
 
@@ -676,6 +839,174 @@ e = <span class="keyword">false</span></div>
             document.getElementById('operationDisplay').innerHTML = html;
         }
 
+        // Wichtige Funktionen - Demos
+        function demonstrateSum() {
+            const input = document.getElementById('sumArray').value;
+            const arr = input.split(',').map(v => parseFloat(v.trim()));
+
+            const total = arr.reduce((sum, v) => sum + v, 0);
+            const countGreater2 = arr.filter(v => v > 2).length;
+            const sumGreater2 = arr.filter(v => v > 2).reduce((sum, v) => sum + v, 0);
+
+            document.getElementById('sumResult').textContent =
+                `Array: [${arr.join(', ')}]\n\n` +
+                `sum(v) = ${total}\n` +
+                `sum(v > 2) = ${countGreater2}  (Anzahl Elemente > 2)\n` +
+                `sum(v(v > 2)) = ${sumGreater2}  (Summe der Elemente > 2)`;
+        }
+
+        function demonstrateFind() {
+            const input = document.getElementById('findArray').value;
+            const condition = document.getElementById('findCondition').value;
+            const arr = input.split(',').map(v => parseFloat(v.trim()));
+
+            let indices = [];
+            let values = [];
+
+            arr.forEach((v, i) => {
+                let match = false;
+                if (condition === '>5') match = v > 5;
+                else if (condition === '<5') match = v < 5;
+                else if (condition === '==5') match = v === 5;
+                else if (condition === '>=5') match = v >= 5;
+
+                if (match) {
+                    indices.push(i + 1); // MATLAB ist 1-basiert
+                    values.push(v);
+                }
+            });
+
+            document.getElementById('findResult').textContent =
+                `Array: [${arr.join(', ')}]\n` +
+                `Bedingung: v ${condition}\n\n` +
+                `idx = find(v ${condition})\n` +
+                `idx = [${indices.join(', ')}]\n\n` +
+                `Werte: v(idx) = [${values.join(', ')}]`;
+        }
+
+        function demonstrateLinspace() {
+            const start = parseFloat(document.getElementById('linStart').value);
+            const end = parseFloat(document.getElementById('linEnd').value);
+            const points = parseInt(document.getElementById('linPoints').value);
+
+            const step = (end - start) / (points - 1);
+            const values = [];
+            for (let i = 0; i < points; i++) {
+                values.push((start + i * step).toFixed(2));
+            }
+
+            document.getElementById('linspaceDisplay').innerHTML =
+                '<div class="vector-demo">' +
+                values.map((v, i) => `
+                    <div class="vector-element">
+                        <div class="index">${i+1}</div>
+                        <div class="value">${v}</div>
+                    </div>
+                `).join('') + '</div>';
+
+            document.getElementById('linspaceCode').textContent =
+                `x = linspace(${start}, ${end}, ${points})\n` +
+                `x = [${values.join(', ')}]`;
+        }
+
+        function demonstrateRandi() {
+            const max = parseInt(document.getElementById('randiMax').value);
+            const rows = parseInt(document.getElementById('randiRows').value);
+            const cols = parseInt(document.getElementById('randiCols').value);
+
+            const matrix = [];
+            for (let i = 0; i < rows; i++) {
+                matrix[i] = [];
+                for (let j = 0; j < cols; j++) {
+                    matrix[i][j] = Math.floor(Math.random() * max) + 1;
+                }
+            }
+
+            let html = `<div class="matrix-grid" style="grid-template-columns: repeat(${cols}, 50px);">`;
+            matrix.forEach(row => {
+                row.forEach(v => {
+                    html += `<div class="matrix-cell">${v}</div>`;
+                });
+            });
+            html += '</div>';
+
+            document.getElementById('randiDisplay').innerHTML = html;
+        }
+
+        function demonstrateNaN() {
+            const input = document.getElementById('nanArray').value;
+            const arr = input.split(',').map(v => {
+                const trimmed = v.trim();
+                return trimmed.toLowerCase() === 'nan' ? NaN : parseFloat(trimmed);
+            });
+
+            const nanIndices = arr.map((v, i) => isNaN(v) ? i + 1 : null).filter(v => v !== null);
+            const cleanArr = arr.filter(v => !isNaN(v));
+            const sumAll = arr.reduce((sum, v) => sum + v, 0);
+            const sumClean = cleanArr.reduce((sum, v) => sum + v, 0);
+            const meanClean = sumClean / cleanArr.length;
+
+            document.getElementById('nanResult').textContent =
+                `Array: [${arr.map(v => isNaN(v) ? 'NaN' : v).join(', ')}]\n\n` +
+                `isnan(v): NaN an Position(en) ${nanIndices.join(', ')}\n\n` +
+                `v(~isnan(v)) = [${cleanArr.join(', ')}]  (NaN entfernt)\n\n` +
+                `sum(v) = ${isNaN(sumAll) ? 'NaN' : sumAll}\n` +
+                `sum(v, 'omitnan') = ${sumClean}\n` +
+                `mean(v, 'omitnan') = ${meanClean.toFixed(2)}`;
+        }
+
+        function demonstrateHistcounts() {
+            const n = parseInt(document.getElementById('histN').value);
+            const numBins = parseInt(document.getElementById('histBins').value);
+
+            // Generiere Zufallsdaten (normalverteilt simuliert)
+            const data = [];
+            for (let i = 0; i < n; i++) {
+                // Box-Muller Transform für Normalverteilung
+                const u1 = Math.random();
+                const u2 = Math.random();
+                const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+                data.push(z * 2 + 5); // μ=5, σ=2
+            }
+
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const binWidth = (max - min) / numBins;
+
+            const bins = Array(numBins).fill(0);
+            const edges = [];
+            for (let i = 0; i <= numBins; i++) {
+                edges.push(min + i * binWidth);
+            }
+
+            data.forEach(v => {
+                for (let i = 0; i < numBins; i++) {
+                    if (v >= edges[i] && (v < edges[i + 1] || i === numBins - 1)) {
+                        bins[i]++;
+                        break;
+                    }
+                }
+            });
+
+            // Einfaches ASCII-Histogramm
+            const maxCount = Math.max(...bins);
+            let html = '<div style="font-family: \'Courier New\', monospace; background: white; padding: 15px; border-radius: 6px;">';
+            bins.forEach((count, i) => {
+                const barLength = Math.round((count / maxCount) * 40);
+                const bar = '█'.repeat(barLength);
+                html += `<div>[${edges[i].toFixed(1)}-${edges[i+1].toFixed(1)}): ${bar} ${count}</div>`;
+            });
+            html += '</div>';
+
+            document.getElementById('histDisplay').innerHTML = html;
+            document.getElementById('histCode').textContent =
+                `data = randn(${n}, 1) * 2 + 5;\n` +
+                `[counts, edges] = histcounts(data, ${numBins});\n\n` +
+                `% Beispiel-Ausgabe:\n` +
+                `% counts = [${bins.slice(0, 5).join(', ')}...]\n` +
+                `% edges = [${edges.slice(0, 6).map(v => v.toFixed(1)).join(', ')}...]`;
+        }
+
         // Initialisierung
         window.onload = function() {
             convertType();
@@ -687,6 +1018,14 @@ e = <span class="keyword">false</span></div>
             currentMatrix = demoMatrix;
             displayMatrix(demoMatrix, 'indexMatrixDisplay');
             performOperation();
+
+            // Initialisiere Wichtige Funktionen
+            demonstrateSum();
+            demonstrateFind();
+            demonstrateLinspace();
+            demonstrateRandi();
+            demonstrateNaN();
+            demonstrateHistcounts();
         };
     </script>
 </body>

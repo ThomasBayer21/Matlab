@@ -39,11 +39,11 @@
         .tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: -1px;
             flex-wrap: wrap;
         }
         .tab-button {
-            padding: 12px 24px;
+            padding: 12px 24px 18px 24px;
             background: rgba(255,255,255,0.3);
             border: none;
             border-radius: 8px 8px 0 0;
@@ -59,9 +59,12 @@
             background: white;
             color: #1abc9c;
         }
+        .tab-button:first-child {
+            border-radius: 12px 8px 0 0;
+        }
         .content {
             background: white;
-            border-radius: 12px;
+            border-radius: 0 12px 12px 12px;
             padding: 30px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
@@ -104,6 +107,13 @@
             border-radius: 6px;
             font-size: 1em;
         }
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
         button {
             padding: 10px 20px;
             background: #1abc9c;
@@ -125,7 +135,7 @@
             font-family: 'Courier New', monospace;
             margin: 15px 0;
             overflow-x: auto;
-            white-space: pre;
+            white-space: pre-wrap;
         }
         .code-block .comment {
             color: #75715e;
@@ -234,17 +244,38 @@
                             <input type="number" id="xMax" value="10" step="0.5">
                         </div>
                         <div class="control-group">
-                            <label>Linienfarbe:</label>
+                            <label>
+                                <input type="checkbox" id="useCustomColor">
+                                Linienfarbe:
+                            </label>
                             <input type="color" id="lineColor" value="#1abc9c">
                         </div>
                         <div class="control-group">
                             <label>Linienstil:</label>
                             <select id="lineStyle">
+                                <option value="none">Standard (MATLAB-Default)</option>
                                 <option value="solid">Durchgezogen (-)</option>
                                 <option value="dashed">Gestrichelt (--)</option>
                                 <option value="dotted">Gepunktet (:)</option>
                                 <option value="dashdot">Strich-Punkt (-·)</option>
                             </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Marker:</label>
+                            <select id="markerStyle">
+                                <option value="none">Keine</option>
+                                <option value="o">Kreis (o)</option>
+                                <option value="x">X-Kreuz (x)</option>
+                                <option value="plus">Plus (+)</option>
+                                <option value="star">Stern (*)</option>
+                                <option value="square">Quadrat (s)</option>
+                                <option value="diamond">Diamant (d)</option>
+                                <option value="triangle">Dreieck (^)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Schrittweite:</label>
+                            <input type="number" id="stepSize" value="0.1" step="0.01" min="0.01">
                         </div>
                         <button onclick="updateBasicPlot()">Plot aktualisieren</button>
                     </div>
@@ -258,10 +289,12 @@
                     <strong>Grundlegende Syntax:</strong><br>
                     <code>plot(x, y)</code> - Plottet y gegen x<br>
                     <code>plot(y)</code> - Plottet y gegen Index<br>
-                    <code>plot(x, y, 'r--')</code> - Mit Formatierung (rot, gestrichelt)<br><br>
+                    <code>plot(x, y, 'r--')</code> - Mit Formatierung (rot, gestrichelt)<br>
+                    <code>plot(x, y, '-o')</code> - Linie mit Kreismarkern<br>
+                    <code>plot(x, y, 'o')</code> - Nur Marker ohne Linie<br><br>
                     <strong>Farben:</strong> 'r' (rot), 'g' (grün), 'b' (blau), 'k' (schwarz), 'c' (cyan), 'm' (magenta), 'y' (gelb)<br>
                     <strong>Linien:</strong> '-' (durchgezogen), '--' (gestrichelt), ':' (gepunktet), '-.' (strich-punkt)<br>
-                    <strong>Marker:</strong> 'o' (Kreis), 'x' (X), '+' (Plus), '*' (Stern), 's' (Quadrat)
+                    <strong>Marker:</strong> 'o' (Kreis), 'x' (X), '+' (Plus), '*' (Stern), 's' (Quadrat), 'd' (Diamant), '^' (Dreieck)
                 </div>
             </div>
 
@@ -322,6 +355,28 @@
 
                 <div class="interactive-section">
                     <h3>Interaktive Plot-Typ Demonstration</h3>
+                    <p>Geben Sie Ihre eigenen Daten ein und wählen Sie einen Plot-Typ:</p>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>X-Werte (kommagetrennt):</label>
+                            <input type="text" id="customX" value="0, 1, 2, 3, 4, 5, 6, 7, 8, 9" style="min-width: 300px;">
+                        </div>
+                        <div class="control-group">
+                            <label>Y-Werte (kommagetrennt):</label>
+                            <input type="text" id="customY" value="0, 3, 1, 4, 2, 5, 3, 6, 4, 7" style="min-width: 300px;">
+                        </div>
+                        <div class="control-group">
+                            <label>Plot-Typ:</label>
+                            <select id="customPlotType">
+                                <option value="line">Line Plot</option>
+                                <option value="scatter">Scatter Plot</option>
+                                <option value="bar">Bar Chart</option>
+                                <option value="area">Area Plot</option>
+                                <option value="stairs">Stairs Plot</option>
+                            </select>
+                        </div>
+                        <button onclick="updateCustomPlot()">Plot aktualisieren</button>
+                    </div>
                     <div class="chart-container">
                         <canvas id="typePlot"></canvas>
                     </div>
@@ -476,16 +531,63 @@ Z = sin(sqrt(X.^2 + Y.^2));
 
                 <div class="interactive-section">
                     <h3>3D-Funktionsvisualisierung</h3>
-                    <p>Beispiel: Z = sin(√(X² + Y²)) - "Mexican Hat" Funktion</p>
-                    <div class="code-block">[X, Y] = meshgrid(-5:0.25:5, -5:0.25:5);
-R = sqrt(X.^2 + Y.^2);
-Z = sin(R) ./ R;  <span class="comment">% sinc-Funktion</span>
-surf(X, Y, Z)
-colorbar
-xlabel(<span class="string">'X'</span>)
-ylabel(<span class="string">'Y'</span>)
-zlabel(<span class="string">'Z'</span>)
-title(<span class="string">'sinc(r) Funktion'</span>)</div>
+                    <p>Wählen Sie eine 3D-Funktion zur Visualisierung (als Heatmap-Projektion):</p>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Funktion:</label>
+                            <select id="func3D" onchange="update3DPlot()">
+                                <option value="sinc">sinc(r) - Mexican Hat</option>
+                                <option value="peaks">Peaks Function</option>
+                                <option value="saddle">Sattelfläche (x² - y²)</option>
+                                <option value="wave">Wellenfunktion</option>
+                                <option value="cone">Kegel</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Auflösung:</label>
+                            <select id="resolution3D" onchange="update3DPlot()">
+                                <option value="20">Niedrig (20×20)</option>
+                                <option value="30" selected>Mittel (30×30)</option>
+                                <option value="40">Hoch (40×40)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="plot3D"></canvas>
+                    </div>
+                    <div class="code-block" id="code3D"></div>
+                </div>
+
+                <div class="interactive-section">
+                    <h3>3D-Helix (plot3)</h3>
+                    <p>Parametrische 3D-Kurve: Helix (Spirale)</p>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Windungen:</label>
+                            <input type="range" id="helixTurns" min="1" max="10" value="3" oninput="updateHelix()">
+                            <span id="helixTurnsValue">3</span>
+                        </div>
+                        <div class="control-group">
+                            <label>Radius:</label>
+                            <input type="range" id="helixRadius" min="1" max="5" value="2" step="0.5" oninput="updateHelix()">
+                            <span id="helixRadiusValue">2</span>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <h4 style="text-align: center; margin: 10px 0;">XY-Projektion (von oben)</h4>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="helixXY"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="text-align: center; margin: 10px 0;">XZ-Projektion (von vorne)</h4>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="helixXZ"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="code-block" id="helixCode"></div>
                 </div>
 
                 <h3>Export von Plots</h3>
@@ -508,6 +610,7 @@ title(<span class="string">'sinc(r) Funktion'</span>)</div>
     <script>
         let basicChart, typeChart, axesChart, holdChart;
         let subplot1Chart, subplot2Chart, subplot3Chart;
+        let plot3DChart, helixXYChart, helixXZChart;
 
         function showTab(tabName) {
             const tabs = document.querySelectorAll('.tab-content');
@@ -548,17 +651,38 @@ title(<span class="string">'sinc(r) Funktion'</span>)</div>
             const func = document.getElementById('plotFunc').value;
             const xMin = parseFloat(document.getElementById('xMin').value);
             const xMax = parseFloat(document.getElementById('xMax').value);
+            const stepSize = parseFloat(document.getElementById('stepSize').value);
+            const useCustomColor = document.getElementById('useCustomColor').checked;
             const color = document.getElementById('lineColor').value;
             const style = document.getElementById('lineStyle').value;
+            const marker = document.getElementById('markerStyle').value;
 
-            const data = generateData(func, xMin, xMax);
+            // Berechne Anzahl der Punkte basierend auf Schrittweite
+            const numPoints = Math.floor((xMax - xMin) / stepSize) + 1;
+            const data = generateData(func, xMin, xMax, numPoints - 1);
 
             const borderDash = {
+                'none': [],
                 'solid': [],
                 'dashed': [10, 5],
                 'dotted': [2, 3],
                 'dashdot': [10, 5, 2, 5]
             }[style];
+
+            // Chart.js Marker-Mapping
+            const markerStyleMap = {
+                'none': 'circle',
+                'o': 'circle',
+                'x': 'cross',
+                'plus': 'crossRot',
+                'star': 'star',
+                'square': 'rect',
+                'diamond': 'rectRot',
+                'triangle': 'triangle'
+            };
+
+            const pointRadius = marker !== 'none' ? 4 : 0;
+            const showLine = style !== 'none' || marker === 'none';
 
             if (basicChart) basicChart.destroy();
 
@@ -569,11 +693,14 @@ title(<span class="string">'sinc(r) Funktion'</span>)</div>
                     datasets: [{
                         label: func + '(x)',
                         data: data.y,
-                        borderColor: color,
+                        borderColor: useCustomColor ? color : '#1abc9c',
                         borderWidth: 2,
                         borderDash: borderDash,
                         fill: false,
-                        pointRadius: 0
+                        pointRadius: pointRadius,
+                        pointStyle: markerStyleMap[marker],
+                        pointBackgroundColor: useCustomColor ? color : '#1abc9c',
+                        showLine: showLine
                     }]
                 },
                 options: {
@@ -596,10 +723,50 @@ title(<span class="string">'sinc(r) Funktion'</span>)</div>
                 'dashdot': '-.'
             };
 
-            document.getElementById('basicPlotCode').textContent =
-                `x = ${xMin}:0.1:${xMax};\n` +
-                `y = ${func}(x);\n` +
-                `plot(x, y, '${lineStyleMap[style]}')`;
+            const markerMap = {
+                'o': 'o',
+                'x': 'x',
+                'plus': '+',
+                'star': '*',
+                'square': 's',
+                'diamond': 'd',
+                'triangle': '^'
+            };
+
+            // Konvertiere HEX zu RGB für MATLAB
+            const hexToRgb = (hex) => {
+                const r = parseInt(hex.slice(1, 3), 16) / 255;
+                const g = parseInt(hex.slice(3, 5), 16) / 255;
+                const b = parseInt(hex.slice(5, 7), 16) / 255;
+                return `[${r.toFixed(2)}, ${g.toFixed(2)}, ${b.toFixed(2)}]`;
+            };
+
+            // Generiere MATLAB-Code
+            let plotCode = `x = ${xMin}:${stepSize}:${xMax};\ny = ${func}(x);\n`;
+
+            // Bestimme plot()-Argumente
+            let plotArgs = 'x, y';
+            let formatString = '';
+
+            // Baue Format-String (Linienstil + Marker)
+            if (style !== 'none' || marker !== 'none') {
+                if (style !== 'none') {
+                    formatString += lineStyleMap[style];
+                }
+                if (marker !== 'none') {
+                    formatString += markerMap[marker];
+                }
+                plotArgs += `, '${formatString}'`;
+            }
+
+            // Füge Farbe hinzu, wenn Checkbox aktiviert
+            if (useCustomColor) {
+                plotArgs += `, 'Color', ${hexToRgb(color)}`;
+            }
+
+            plotCode += `plot(${plotArgs})`;
+
+            document.getElementById('basicPlotCode').textContent = plotCode;
         }
 
         function initMiniCharts() {
@@ -846,13 +1013,22 @@ title(<span class="string">'sinc(r) Funktion'</span>)</div>
                 }
             });
 
+            let gridCode = '';
+            if (grid === 'both') {
+                gridCode = `grid on\n`;
+            } else if (grid === 'x') {
+                gridCode = `ax = gca;\nax.XGrid = 'on';\nax.YGrid = 'off';\n`;
+            } else if (grid === 'y') {
+                gridCode = `ax = gca;\nax.XGrid = 'off';\nax.YGrid = 'on';\n`;
+            }
+
             document.getElementById('axesCode').textContent =
                 `plot(x, y)\n` +
                 `title('${title}')\n` +
                 `xlabel('${xLabel}')\n` +
                 `ylabel('${yLabel}')\n` +
                 `legend('${legend}')\n` +
-                (grid !== 'none' ? `grid on\n` : '') +
+                gridCode +
                 (yScale === 'logarithmic' ? `set(gca, 'YScale', 'log')\n` : '');
         }
 
@@ -955,14 +1131,378 @@ title(<span class="string">'sinc(r) Funktion'</span>)</div>
             });
         }
 
+        // 3D-Oberflächenplot als Heatmap
+        function update3DPlot() {
+            const func = document.getElementById('func3D').value;
+            const res = parseInt(document.getElementById('resolution3D').value);
+
+            // Erstelle Meshgrid
+            const range = 5;
+            const step = (2 * range) / (res - 1);
+            const data = [];
+            let funcStr = '';
+
+            for (let i = 0; i < res; i++) {
+                const y = -range + i * step;
+                for (let j = 0; j < res; j++) {
+                    const x = -range + j * step;
+                    let z = 0;
+
+                    switch(func) {
+                        case 'sinc':
+                            const r = Math.sqrt(x*x + y*y) + 0.0001;
+                            z = Math.sin(r) / r;
+                            funcStr = '[X, Y] = meshgrid(-5:0.25:5);\nR = sqrt(X.^2 + Y.^2) + eps;\nZ = sin(R) ./ R;\nsurf(X, Y, Z)';
+                            break;
+                        case 'peaks':
+                            z = 3*(1-x)^2 * Math.exp(-x^2 - (y+1)^2)
+                                - 10*(x/5 - x^3 - y^5) * Math.exp(-x^2 - y^2)
+                                - 1/3 * Math.exp(-(x+1)^2 - y^2);
+                            funcStr = 'Z = peaks(30);\nsurf(Z)';
+                            break;
+                        case 'saddle':
+                            z = x*x - y*y;
+                            funcStr = '[X, Y] = meshgrid(-5:0.25:5);\nZ = X.^2 - Y.^2;\nsurf(X, Y, Z)';
+                            break;
+                        case 'wave':
+                            z = Math.sin(x) * Math.cos(y);
+                            funcStr = '[X, Y] = meshgrid(-5:0.25:5);\nZ = sin(X) .* cos(Y);\nsurf(X, Y, Z)';
+                            break;
+                        case 'cone':
+                            z = -Math.sqrt(x*x + y*y);
+                            funcStr = '[X, Y] = meshgrid(-5:0.25:5);\nZ = -sqrt(X.^2 + Y.^2);\nsurf(X, Y, Z)';
+                            break;
+                    }
+
+                    data.push({
+                        x: j,
+                        y: i,
+                        v: z
+                    });
+                }
+            }
+
+            // Erstelle Farbskala basierend auf Z-Werten
+            const zValues = data.map(d => d.v);
+            const minZ = Math.min(...zValues);
+            const maxZ = Math.max(...zValues);
+
+            // Matrix-Daten für Heatmap
+            const matrixData = [];
+            for (let i = 0; i < res; i++) {
+                const row = [];
+                for (let j = 0; j < res; j++) {
+                    row.push(data[i * res + j].v);
+                }
+                matrixData.push(row);
+            }
+
+            if (plot3DChart) plot3DChart.destroy();
+
+            // Verwende Matrix-Visualisierung (Bubble Chart für Heatmap-Effekt)
+            const bubbleData = data.map(d => ({
+                x: d.x,
+                y: d.y,
+                r: 8,
+                z: d.v
+            }));
+
+            // Normalisiere Farben
+            const normalizeColor = (val) => {
+                const norm = (val - minZ) / (maxZ - minZ);
+                const hue = (1 - norm) * 240; // Blau (240) bis Rot (0)
+                return `hsl(${hue}, 70%, 50%)`;
+            };
+
+            plot3DChart = new Chart(document.getElementById('plot3D'), {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Z-Werte',
+                        data: bubbleData,
+                        backgroundColor: bubbleData.map(d => normalizeColor(d.z)),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Heatmap-Projektion der 3D-Oberfläche' },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const z = context.raw.z;
+                                    return `Z = ${z.toFixed(3)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'X' },
+                            min: 0,
+                            max: res - 1
+                        },
+                        y: {
+                            title: { display: true, text: 'Y' },
+                            min: 0,
+                            max: res - 1
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('code3D').textContent = funcStr;
+        }
+
+        // 3D-Helix Visualisierung
+        function updateHelix() {
+            const turns = parseFloat(document.getElementById('helixTurns').value);
+            const radius = parseFloat(document.getElementById('helixRadius').value);
+
+            document.getElementById('helixTurnsValue').textContent = turns;
+            document.getElementById('helixRadiusValue').textContent = radius;
+
+            // Generiere Helix-Punkte
+            const points = 200;
+            const t = [];
+            const x = [];
+            const y = [];
+            const z = [];
+
+            for (let i = 0; i < points; i++) {
+                const tVal = (i / points) * turns * 2 * Math.PI;
+                t.push(tVal);
+                x.push(radius * Math.cos(tVal));
+                y.push(radius * Math.sin(tVal));
+                z.push(tVal * 2);
+            }
+
+            // XY-Projektion (von oben)
+            if (helixXYChart) helixXYChart.destroy();
+            helixXYChart = new Chart(document.getElementById('helixXY'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'XY-Projektion',
+                        data: x.map((xVal, i) => ({ x: xVal, y: y[i] })),
+                        backgroundColor: x.map((_, i) => {
+                            const hue = (i / points) * 240;
+                            return `hsl(${hue}, 70%, 50%)`;
+                        }),
+                        pointRadius: 3,
+                        showLine: true,
+                        borderColor: '#1abc9c',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'X' },
+                            min: -radius - 1,
+                            max: radius + 1
+                        },
+                        y: {
+                            title: { display: true, text: 'Y' },
+                            min: -radius - 1,
+                            max: radius + 1
+                        }
+                    }
+                }
+            });
+
+            // XZ-Projektion (von vorne)
+            if (helixXZChart) helixXZChart.destroy();
+            helixXZChart = new Chart(document.getElementById('helixXZ'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'XZ-Projektion',
+                        data: x.map((xVal, i) => ({ x: xVal, y: z[i] })),
+                        backgroundColor: x.map((_, i) => {
+                            const hue = (i / points) * 240;
+                            return `hsl(${hue}, 70%, 50%)`;
+                        }),
+                        pointRadius: 3,
+                        showLine: true,
+                        borderColor: '#e74c3c',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'X' },
+                            min: -radius - 1,
+                            max: radius + 1
+                        },
+                        y: {
+                            title: { display: true, text: 'Z (Höhe)' },
+                            min: 0,
+                            max: turns * 2 * Math.PI * 2
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('helixCode').textContent =
+                `t = 0:pi/50:${turns}*2*pi;\n` +
+                `x = ${radius} * cos(t);\n` +
+                `y = ${radius} * sin(t);\n` +
+                `z = t * 2;\n` +
+                `plot3(x, y, z)\n` +
+                `xlabel('X'); ylabel('Y'); zlabel('Z')\n` +
+                `grid on`;
+        }
+
+        // Custom Plot mit Benutzereingaben
+        function updateCustomPlot() {
+            const xInput = document.getElementById('customX').value;
+            const yInput = document.getElementById('customY').value;
+            const plotType = document.getElementById('customPlotType').value;
+
+            // Parse Eingaben
+            const xData = xInput.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+            const yData = yInput.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+
+            // Validierung
+            if (xData.length === 0 || yData.length === 0) {
+                alert('Bitte geben Sie gültige Zahlen ein!');
+                return;
+            }
+
+            if (xData.length !== yData.length) {
+                alert('X und Y müssen die gleiche Anzahl von Werten haben!');
+                return;
+            }
+
+            let config;
+            let code = '';
+
+            switch(plotType) {
+                case 'line':
+                    config = {
+                        type: 'line',
+                        data: {
+                            labels: xData,
+                            datasets: [{
+                                label: 'y(x)',
+                                data: yData,
+                                borderColor: '#1abc9c',
+                                fill: false,
+                                pointRadius: 3
+                            }]
+                        }
+                    };
+                    code = `x = [${xData.join(', ')}];\ny = [${yData.join(', ')}];\nplot(x, y)`;
+                    break;
+
+                case 'scatter':
+                    config = {
+                        type: 'scatter',
+                        data: {
+                            datasets: [{
+                                label: 'Datenpunkte',
+                                data: xData.map((x, i) => ({ x: x, y: yData[i] })),
+                                backgroundColor: '#e74c3c',
+                                pointRadius: 6
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: { type: 'linear', position: 'bottom' }
+                            }
+                        }
+                    };
+                    code = `x = [${xData.join(', ')}];\ny = [${yData.join(', ')}];\nscatter(x, y)`;
+                    break;
+
+                case 'bar':
+                    config = {
+                        type: 'bar',
+                        data: {
+                            labels: xData.map(v => v.toString()),
+                            datasets: [{
+                                label: 'Werte',
+                                data: yData,
+                                backgroundColor: '#3498db'
+                            }]
+                        }
+                    };
+                    code = `x = [${xData.join(', ')}];\ny = [${yData.join(', ')}];\nbar(x, y)`;
+                    break;
+
+                case 'area':
+                    config = {
+                        type: 'line',
+                        data: {
+                            labels: xData,
+                            datasets: [{
+                                label: 'Fläche',
+                                data: yData,
+                                borderColor: '#9b59b6',
+                                backgroundColor: 'rgba(155, 89, 182, 0.3)',
+                                fill: true,
+                                pointRadius: 0
+                            }]
+                        }
+                    };
+                    code = `x = [${xData.join(', ')}];\ny = [${yData.join(', ')}];\narea(x, y)`;
+                    break;
+
+                case 'stairs':
+                    config = {
+                        type: 'line',
+                        data: {
+                            labels: xData,
+                            datasets: [{
+                                label: 'Treppe',
+                                data: yData,
+                                borderColor: '#e67e22',
+                                stepped: true,
+                                fill: false,
+                                pointRadius: 3
+                            }]
+                        }
+                    };
+                    code = `x = [${xData.join(', ')}];\ny = [${yData.join(', ')}];\nstairs(x, y)`;
+                    break;
+            }
+
+            if (typeChart) typeChart.destroy();
+            typeChart = new Chart(document.getElementById('typePlot'), {
+                ...config,
+                options: {
+                    ...config.options,
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            document.getElementById('typePlotCode').textContent = code;
+        }
+
         // Initialisierung
         window.onload = function() {
             updateBasicPlot();
             initMiniCharts();
-            showPlotType('line');
+            updateCustomPlot();
             updateAxesPlot();
             initHoldPlot();
             initSubplots();
+            update3DPlot();
+            updateHelix();
         };
     </script>
 </body>
