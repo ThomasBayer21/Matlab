@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATLAB Grundlagen - Interaktive Visualisierung</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .header a:hover {
+            opacity: 1;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab-button {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        .tab-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+        }
+        .content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        h2 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .interactive-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: 600;
+        }
+        input[type="number"], input[type="text"], select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .matrix-display {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid #667eea;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .matrix-grid {
+            display: inline-grid;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .matrix-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .matrix-cell:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+        .matrix-cell.highlighted {
+            background: #ffd700;
+            border-color: #ffa500;
+        }
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .code-block .comment {
+            color: #75715e;
+        }
+        .code-block .string {
+            color: #e6db74;
+        }
+        .code-block .number {
+            color: #ae81ff;
+        }
+        .code-block .keyword {
+            color: #f92672;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .datatype-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .datatype-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: all 0.3s;
+        }
+        .datatype-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        .datatype-card h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .vector-demo {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .vector-element {
+            min-width: 60px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .vector-element:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .vector-element .index {
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
+        .vector-element .value {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>MATLAB Grundlagen</h1>
+        <p><a href="../index.html">← Zurück zur Übersicht</a></p>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('datentypen')">Datentypen</button>
+            <button class="tab-button" onclick="showTab('vektoren')">Vektoren</button>
+            <button class="tab-button" onclick="showTab('matrizen')">Matrizen</button>
+            <button class="tab-button" onclick="showTab('indizierung')">Indizierung</button>
+            <button class="tab-button" onclick="showTab('operationen')">Operationen</button>
+        </div>
+
+        <div class="content">
+            <!-- Datentypen Tab -->
+            <div id="datentypen" class="tab-content active">
+                <h2>MATLAB Datentypen</h2>
+                <p>In MATLAB werden Variablen implizit deklariert, typischerweise als <code>double</code>. Hier sind die wichtigsten Datentypen:</p>
+
+                <div class="datatype-grid">
+                    <div class="datatype-card">
+                        <h3>double</h3>
+                        <p>64-bit Fließkommazahl (Standard)</p>
+                        <div class="code-block">a = <span class="number">3.14</span></div>
+                        <p><small>Bereich: ±1.79769e308</small></p>
+                    </div>
+
+                    <div class="datatype-card">
+                        <h3>single</h3>
+                        <p>32-bit Fließkommazahl</p>
+                        <div class="code-block">b = single(<span class="number">3.14</span>)</div>
+                        <p><small>Weniger Speicher, geringere Präzision</small></p>
+                    </div>
+
+                    <div class="datatype-card">
+                        <h3>int16, int32, int64</h3>
+                        <p>Ganzzahlen verschiedener Größe</p>
+                        <div class="code-block">c = int16(<span class="number">100</span>)</div>
+                        <p><small>int16: -32768 bis 32767</small></p>
+                    </div>
+
+                    <div class="datatype-card">
+                        <h3>logical</h3>
+                        <p>Boolesche Werte</p>
+                        <div class="code-block">d = <span class="keyword">true</span>
+e = <span class="keyword">false</span></div>
+                        <p><small>true (1) oder false (0)</small></p>
+                    </div>
+
+                    <div class="datatype-card">
+                        <h3>char</h3>
+                        <p>Zeichenkette (Array)</p>
+                        <div class="code-block">f = <span class="string">'Hello'</span></div>
+                        <p><small>Einzelne Zeichen zugreifbar</small></p>
+                    </div>
+
+                    <div class="datatype-card">
+                        <h3>string</h3>
+                        <p>Zeichenkette (Container)</p>
+                        <div class="code-block">g = <span class="string">"Hello World"</span></div>
+                        <p><small>Moderne String-Darstellung</small></p>
+                    </div>
+                </div>
+
+                <div class="interactive-section">
+                    <h3>Interaktiver Datentyp-Konverter</h3>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Wert:</label>
+                            <input type="number" id="typeValue" value="3.14159" step="0.01">
+                        </div>
+                        <div class="control-group">
+                            <label>Zieltyp:</label>
+                            <select id="targetType">
+                                <option value="double">double</option>
+                                <option value="single">single</option>
+                                <option value="int16">int16</option>
+                                <option value="int32">int32</option>
+                                <option value="logical">logical</option>
+                            </select>
+                        </div>
+                        <button onclick="convertType()">Konvertieren</button>
+                    </div>
+                    <div class="matrix-display" id="typeResult"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Wichtig:</strong> Die Funktion <code>eps</code> zeigt den minimalen numerischen Abstand zwischen 1 und der nächsten Double-Fließkommazahl an (≈2.2e-16). Kleinere Unterschiede werden gerundet.
+                </div>
+            </div>
+
+            <!-- Vektoren Tab -->
+            <div id="vektoren" class="tab-content">
+                <h2>Vektoren in MATLAB</h2>
+                <p>Vektoren sind eindimensionale Arrays. MATLAB unterscheidet zwischen Zeilen- und Spaltenvektoren.</p>
+
+                <div class="interactive-section">
+                    <h3>Vektor-Generator</h3>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Start:</label>
+                            <input type="number" id="vecStart" value="1">
+                        </div>
+                        <div class="control-group">
+                            <label>Schritt:</label>
+                            <input type="number" id="vecStep" value="1">
+                        </div>
+                        <div class="control-group">
+                            <label>Ende:</label>
+                            <input type="number" id="vecEnd" value="10">
+                        </div>
+                        <div class="control-group">
+                            <label>Typ:</label>
+                            <select id="vecType">
+                                <option value="row">Zeilenvektor</option>
+                                <option value="col">Spaltenvektor</option>
+                            </select>
+                        </div>
+                        <button onclick="generateVector()">Generieren</button>
+                    </div>
+                    <div id="vectorDisplay"></div>
+                    <div class="code-block" id="vectorCode"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Syntax:</strong><br>
+                    Zeilenvektor: <code>a = [1, 2, 3, 4, 5]</code> oder <code>a = 1:5</code><br>
+                    Spaltenvektor: <code>b = [1; 2; 3; 4; 5]</code> oder <code>b = (1:5)'</code><br>
+                    Mit Schrittweite: <code>c = 1:2:10</code> → [1, 3, 5, 7, 9]
+                </div>
+            </div>
+
+            <!-- Matrizen Tab -->
+            <div id="matrizen" class="tab-content">
+                <h2>Matrizen in MATLAB</h2>
+                <p>Matrizen sind zweidimensionale Arrays. Die Hauptidee von MATLAB: <strong>Alles ist eine Matrix!</strong></p>
+
+                <div class="interactive-section">
+                    <h3>Matrix-Generator</h3>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Zeilen:</label>
+                            <input type="number" id="matRows" value="3" min="1" max="8">
+                        </div>
+                        <div class="control-group">
+                            <label>Spalten:</label>
+                            <input type="number" id="matCols" value="3" min="1" max="8">
+                        </div>
+                        <div class="control-group">
+                            <label>Typ:</label>
+                            <select id="matType">
+                                <option value="ones">ones (Einsen)</option>
+                                <option value="zeros">zeros (Nullen)</option>
+                                <option value="eye">eye (Identität)</option>
+                                <option value="rand">rand (Zufällig 0-1)</option>
+                                <option value="randi">randi (Zufällig 1-10)</option>
+                            </select>
+                        </div>
+                        <button onclick="generateMatrix()">Generieren</button>
+                    </div>
+                    <div id="matrixDisplay"></div>
+                    <div class="code-block" id="matrixCode"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Wichtige Matrixfunktionen:</strong><br>
+                    <code>ones(m,n)</code> - Matrix aus Einsen<br>
+                    <code>zeros(m,n)</code> - Matrix aus Nullen<br>
+                    <code>eye(n)</code> - Identitätsmatrix<br>
+                    <code>rand(m,n)</code> - Zufallswerte zwischen 0 und 1<br>
+                    <code>randi(max,m,n)</code> - Ganzzahlige Zufallswerte
+                </div>
+            </div>
+
+            <!-- Indizierung Tab -->
+            <div id="indizierung" class="tab-content">
+                <h2>Indizierung in MATLAB</h2>
+                <p>MATLAB verwendet 1-basierte Indizierung. Der Index beginnt bei 1, nicht bei 0!</p>
+
+                <div class="interactive-section">
+                    <h3>Interaktive Indizierung</h3>
+                    <p>Klicken Sie auf die Matrixelemente, um deren Indizes zu sehen:</p>
+                    <div id="indexMatrixDisplay"></div>
+                    <div class="matrix-display" id="indexInfo">Klicken Sie auf ein Element...</div>
+                    <div class="code-block" id="indexCode"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Indizierungsarten:</strong><br>
+                    Direkter Zugriff: <code>A(2,3)</code> - Element in Zeile 2, Spalte 3<br>
+                    Linearer Index: <code>A(5)</code> - 5. Element (spaltenweise gezählt)<br>
+                    Bereichsauswahl: <code>A(1:3, 2)</code> - Zeilen 1-3, Spalte 2<br>
+                    Alle Elemente: <code>A(:,2)</code> - Alle Zeilen, Spalte 2<br>
+                    Letztes Element: <code>A(end, end)</code>
+                </div>
+            </div>
+
+            <!-- Operationen Tab -->
+            <div id="operationen" class="tab-content">
+                <h2>Matrix-Operationen</h2>
+                <p>MATLAB unterscheidet zwischen Matrix-Operationen und elementweisen Operationen.</p>
+
+                <div class="interactive-section">
+                    <h3>Interaktiver Operations-Rechner</h3>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Operation:</label>
+                            <select id="opType">
+                                <option value="add">Addition (+)</option>
+                                <option value="sub">Subtraktion (-)</option>
+                                <option value="mult">Matrix-Multiplikation (*)</option>
+                                <option value="elemMult">Elementweise Multiplikation (.*)</option>
+                                <option value="transpose">Transponieren (')</option>
+                                <option value="inv">Inverse</option>
+                            </select>
+                        </div>
+                        <button onclick="performOperation()">Berechnen</button>
+                    </div>
+                    <div id="operationDisplay"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Wichtiger Unterschied:</strong><br>
+                    <code>A * B</code> - Matrix-Multiplikation (Zeilen × Spalten)<br>
+                    <code>A .* B</code> - Elementweise Multiplikation<br>
+                    <code>A ^ 2</code> - Matrix-Potenz (A * A)<br>
+                    <code>A .^ 2</code> - Jedes Element quadriert
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-button');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function convertType() {
+            const value = parseFloat(document.getElementById('typeValue').value);
+            const type = document.getElementById('targetType').value;
+            let result;
+
+            switch(type) {
+                case 'double':
+                    result = value;
+                    break;
+                case 'single':
+                    result = Math.fround(value);
+                    break;
+                case 'int16':
+                    result = Math.max(-32768, Math.min(32767, Math.round(value)));
+                    break;
+                case 'int32':
+                    result = Math.round(value);
+                    break;
+                case 'logical':
+                    result = value !== 0;
+                    break;
+            }
+
+            document.getElementById('typeResult').innerHTML =
+                `Original (double): ${value}\n` +
+                `Konvertiert (${type}): ${result}\n` +
+                `MATLAB Code: ${type}(${value})`;
+        }
+
+        function generateVector() {
+            const start = parseInt(document.getElementById('vecStart').value);
+            const step = parseInt(document.getElementById('vecStep').value);
+            const end = parseInt(document.getElementById('vecEnd').value);
+            const type = document.getElementById('vecType').value;
+
+            const values = [];
+            for(let i = start; i <= end; i += step) {
+                values.push(i);
+            }
+
+            const display = document.getElementById('vectorDisplay');
+            if(type === 'row') {
+                display.innerHTML = '<div class="vector-demo">' +
+                    values.map((v, i) => `
+                        <div class="vector-element">
+                            <div class="index">${i+1}</div>
+                            <div class="value">${v}</div>
+                        </div>
+                    `).join('') + '</div>';
+                document.getElementById('vectorCode').textContent =
+                    `a = ${start}:${step}:${end}\na = [${values.join(', ')}]`;
+            } else {
+                display.innerHTML = '<div class="vector-demo" style="flex-direction: column;">' +
+                    values.map((v, i) => `
+                        <div class="vector-element">
+                            <div class="index">${i+1}</div>
+                            <div class="value">${v}</div>
+                        </div>
+                    `).join('') + '</div>';
+                document.getElementById('vectorCode').textContent =
+                    `b = (${start}:${step}:${end})'\nb = [${values.join('; ')}]`;
+            }
+        }
+
+        let currentMatrix = [];
+
+        function generateMatrix() {
+            const rows = parseInt(document.getElementById('matRows').value);
+            const cols = parseInt(document.getElementById('matCols').value);
+            const type = document.getElementById('matType').value;
+
+            currentMatrix = [];
+            for(let i = 0; i < rows; i++) {
+                currentMatrix[i] = [];
+                for(let j = 0; j < cols; j++) {
+                    switch(type) {
+                        case 'ones':
+                            currentMatrix[i][j] = 1;
+                            break;
+                        case 'zeros':
+                            currentMatrix[i][j] = 0;
+                            break;
+                        case 'eye':
+                            currentMatrix[i][j] = (i === j) ? 1 : 0;
+                            break;
+                        case 'rand':
+                            currentMatrix[i][j] = Math.random().toFixed(2);
+                            break;
+                        case 'randi':
+                            currentMatrix[i][j] = Math.floor(Math.random() * 10) + 1;
+                            break;
+                    }
+                }
+            }
+
+            displayMatrix(currentMatrix, 'matrixDisplay');
+            document.getElementById('matrixCode').textContent =
+                `A = ${type}(${rows}${cols !== rows ? ', ' + cols : ''})`;
+        }
+
+        function displayMatrix(matrix, elementId) {
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+
+            let html = `<div class="matrix-grid" style="grid-template-columns: repeat(${cols}, 50px);">`;
+            for(let i = 0; i < rows; i++) {
+                for(let j = 0; j < cols; j++) {
+                    html += `<div class="matrix-cell" data-row="${i}" data-col="${j}" onclick="highlightCell(${i}, ${j})">${matrix[i][j]}</div>`;
+                }
+            }
+            html += '</div>';
+            document.getElementById(elementId).innerHTML = html;
+        }
+
+        function highlightCell(row, col) {
+            const cells = document.querySelectorAll('.matrix-cell');
+            cells.forEach(cell => cell.classList.remove('highlighted'));
+
+            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            cell.classList.add('highlighted');
+
+            const linearIndex = col * currentMatrix.length + row + 1;
+
+            document.getElementById('indexInfo').innerHTML =
+                `Element: ${currentMatrix[row][col]}\n` +
+                `Position: Zeile ${row+1}, Spalte ${col+1}\n` +
+                `Direkter Index: A(${row+1}, ${col+1})\n` +
+                `Linearer Index: A(${linearIndex})`;
+
+            document.getElementById('indexCode').textContent =
+                `A(${row+1}, ${col+1})  % Direkter Zugriff\n` +
+                `A(${linearIndex})      % Linearer Index`;
+        }
+
+        function performOperation() {
+            const op = document.getElementById('opType').value;
+            const A = [[2, 1], [3, 4]];
+            const B = [[1, 2], [3, 1]];
+            let result = [];
+            let code = '';
+
+            switch(op) {
+                case 'add':
+                    result = [[A[0][0]+B[0][0], A[0][1]+B[0][1]], [A[1][0]+B[1][0], A[1][1]+B[1][1]]];
+                    code = 'C = A + B';
+                    break;
+                case 'sub':
+                    result = [[A[0][0]-B[0][0], A[0][1]-B[0][1]], [A[1][0]-B[1][0], A[1][1]-B[1][1]]];
+                    code = 'C = A - B';
+                    break;
+                case 'mult':
+                    result = [
+                        [A[0][0]*B[0][0]+A[0][1]*B[1][0], A[0][0]*B[0][1]+A[0][1]*B[1][1]],
+                        [A[1][0]*B[0][0]+A[1][1]*B[1][0], A[1][0]*B[0][1]+A[1][1]*B[1][1]]
+                    ];
+                    code = 'C = A * B  % Matrix-Multiplikation';
+                    break;
+                case 'elemMult':
+                    result = [[A[0][0]*B[0][0], A[0][1]*B[0][1]], [A[1][0]*B[1][0], A[1][1]*B[1][1]]];
+                    code = 'C = A .* B  % Elementweise';
+                    break;
+                case 'transpose':
+                    result = [[A[0][0], A[1][0]], [A[0][1], A[1][1]]];
+                    code = "C = A'  % Transponieren";
+                    break;
+                case 'inv':
+                    const det = A[0][0]*A[1][1] - A[0][1]*A[1][0];
+                    result = [[A[1][1]/det, -A[0][1]/det], [-A[1][0]/det, A[0][0]/det]];
+                    result = result.map(row => row.map(v => v.toFixed(2)));
+                    code = 'C = inv(A)  % Inverse';
+                    break;
+            }
+
+            let html = '<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">';
+            html += '<div><strong>Matrix A:</strong>';
+            html += `<div class="matrix-grid" style="grid-template-columns: repeat(2, 50px);">`;
+            A.forEach(row => row.forEach(v => html += `<div class="matrix-cell">${v}</div>`));
+            html += '</div></div>';
+
+            if(op !== 'transpose' && op !== 'inv') {
+                html += '<div><strong>Matrix B:</strong>';
+                html += `<div class="matrix-grid" style="grid-template-columns: repeat(2, 50px);">`;
+                B.forEach(row => row.forEach(v => html += `<div class="matrix-cell">${v}</div>`));
+                html += '</div></div>';
+            }
+
+            html += '<div><strong>Ergebnis:</strong>';
+            html += `<div class="matrix-grid" style="grid-template-columns: repeat(2, 50px);">`;
+            result.forEach(row => row.forEach(v => html += `<div class="matrix-cell" style="background: #1abc9c; color: white;">${v}</div>`));
+            html += '</div></div>';
+            html += '</div>';
+
+            html += `<div class="code-block" style="margin-top: 15px;">${code}</div>`;
+            document.getElementById('operationDisplay').innerHTML = html;
+        }
+
+        // Initialisierung
+        window.onload = function() {
+            convertType();
+            generateVector();
+            generateMatrix();
+
+            // Initialisiere Indizierungs-Demo
+            const demoMatrix = [[1,2,3],[4,5,6],[7,8,9]];
+            currentMatrix = demoMatrix;
+            displayMatrix(demoMatrix, 'indexMatrixDisplay');
+            performOperation();
+        };
+    </script>
+</body>
+</html>

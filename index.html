@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATLAB - Interaktive Visualisierungen</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #e4e4ec 0%, #d0d0dc 100%);
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 2.2em;
+            font-weight: 600;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .categories-grid {
+            display: grid;
+            gap: 20px;
+        }
+        .category-card {
+            background: #fafafa;
+            padding: 25px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .category-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .category-card.grundlagen {
+            border-left-color: #e67e22;
+        }
+        .category-card.funktionen {
+            border-left-color: #9b59b6;
+        }
+        .category-card.visualisierung {
+            border-left-color: #1abc9c;
+        }
+        .category-card.berechnungen {
+            border-left-color: #e74c3c;
+        }
+        .category-card.datetime {
+            border-left-color: #3498db;
+        }
+        .category-card h2 {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .category-card p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <h1>MATLAB</h1>
+    <div class="subtitle">Interaktive Visualisierungen zum Lernen und Verstehen</div>
+
+    <div class="container">
+        <div class="categories-grid">
+            <a href="grundlagen-visualisierung/index.html" class="category-card grundlagen">
+                <h2>Grundlagen</h2>
+                <p>Datentypen, Variablen, Vektoren, Matrizen und Indizierung - die fundamentalen Konzepte von MATLAB interaktiv visualisiert.</p>
+            </a>
+
+            <a href="funktionen-visualisierung/index.html" class="category-card funktionen">
+                <h2>Funktionen</h2>
+                <p>Verschiedene Funktionstypen verstehen: Standard-, lokale, verschachtelte und anonyme Funktionen mit praktischen Beispielen.</p>
+            </a>
+
+            <a href="visualisierung-plots/index.html" class="category-card visualisierung">
+                <h2>Visualisierung & Plots</h2>
+                <p>Interaktive Plotting-Beispiele: 2D- und 3D-Plots, Achsenkonfiguration, Legenden und verschiedene Plot-Typen.</p>
+            </a>
+
+            <a href="berechnungen-visualisierung/index.html" class="category-card berechnungen">
+                <h2>Berechnungen</h2>
+                <p>Numerische Berechnungen, Matrixoperationen und mathematische Funktionen anschaulich erklärt.</p>
+            </a>
+
+            <a href="datetime-visualisierung/index.html" class="category-card datetime">
+                <h2>Datum & Zeit</h2>
+                <p>Arbeiten mit Datum und Zeitwerten, Formatierung und zeitbasierte Berechnungen.</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

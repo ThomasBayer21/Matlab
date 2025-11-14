@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATLAB Datum & Zeit - Interaktive Visualisierung</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .header a:hover {
+            opacity: 1;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab-button {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.3);
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        .tab-button:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+        }
+        .content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        h2 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .interactive-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: 600;
+        }
+        input[type="number"], input[type="date"], input[type="time"], select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .code-block .comment {
+            color: #75715e;
+        }
+        .code-block .string {
+            color: #e6db74;
+        }
+        .code-block .function {
+            color: #66d9ef;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .result-display {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid #667eea;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .datetime-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            margin: 10px 0;
+        }
+        .datetime-card h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .format-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .format-example {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+        .format-example .format-code {
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .format-example .format-result {
+            font-family: 'Courier New', monospace;
+            color: #2c3e50;
+            margin-top: 5px;
+        }
+        .clock-display {
+            text-align: center;
+            font-size: 3em;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .date-display {
+            text-align: center;
+            font-size: 1.5em;
+            color: #555;
+            margin-top: -10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>MATLAB Datum & Zeit</h1>
+        <p><a href="../index.html">← Zurück zur Übersicht</a></p>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('erstellen')">Datetime erstellen</button>
+            <button class="tab-button" onclick="showTab('formatierung')">Formatierung</button>
+            <button class="tab-button" onclick="showTab('rechnen')">Rechnen mit Zeiten</button>
+            <button class="tab-button" onclick="showTab('timetable')">Timetable</button>
+        </div>
+
+        <div class="content">
+            <!-- Datetime erstellen Tab -->
+            <div id="erstellen" class="tab-content active">
+                <h2>Datetime-Variablen erstellen</h2>
+                <p>MATLAB bietet den Datentyp <code>datetime</code> für Datum und Zeitwerte.</p>
+
+                <div class="interactive-section">
+                    <h3>Aktuelle Zeit</h3>
+                    <div class="clock-display" id="currentTime">00:00:00</div>
+                    <div class="date-display" id="currentDate">Laden...</div>
+                </div>
+
+                <h3>Verschiedene Erstellungsmethoden</h3>
+
+                <div class="datetime-card">
+                    <h3>Vordefinierte Werte</h3>
+                    <div class="code-block">t1 = <span class="function">datetime</span>(<span class="string">"now"</span>)        <span class="comment">% Aktuelle Zeit</span>
+t2 = <span class="function">datetime</span>(<span class="string">"today"</span>)      <span class="comment">% Heute 00:00:00</span>
+t3 = <span class="function">datetime</span>(<span class="string">"tomorrow"</span>)   <span class="comment">% Morgen 00:00:00</span>
+t4 = <span class="function">datetime</span>(<span class="string">"yesterday"</span>)  <span class="comment">% Gestern 00:00:00</span></div>
+                </div>
+
+                <div class="datetime-card">
+                    <h3>Mit Zahlen erstellen</h3>
+                    <div class="code-block">t5 = <span class="function">datetime</span>(2024, 12, 31)  <span class="comment">% Jahr, Monat, Tag</span>
+t6 = <span class="function">datetime</span>(2024, 12, 31, 23, 59, 59)  <span class="comment">% + Stunden, Minuten, Sekunden</span></div>
+
+                    <div class="interactive-section">
+                        <div class="controls">
+                            <div class="control-group">
+                                <label>Datum:</label>
+                                <input type="date" id="customDate" value="2024-12-31">
+                            </div>
+                            <div class="control-group">
+                                <label>Zeit:</label>
+                                <input type="time" id="customTime" value="12:00">
+                            </div>
+                            <button onclick="createDatetime()">Erstellen</button>
+                        </div>
+                        <div class="result-display" id="customResult"></div>
+                    </div>
+                </div>
+
+                <div class="datetime-card">
+                    <h3>Mit Input-Format</h3>
+                    <div class="code-block">t = <span class="function">datetime</span>(<span class="string">"22.12.31"</span>, <span class="string">'InputFormat'</span>, <span class="string">'yy.MM.dd'</span>)
+t = <span class="function">datetime</span>(<span class="string">"31/12/2022"</span>, <span class="string">'InputFormat'</span>, <span class="string">'dd/MM/yyyy'</span>)</div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Format-Zeichen:</strong><br>
+                    <code>yyyy</code> - Jahr (4-stellig), <code>yy</code> - Jahr (2-stellig)<br>
+                    <code>MM</code> - Monat (2-stellig), <code>MMM</code> - Monat (Kurzform), <code>MMMM</code> - Monat (Lang)<br>
+                    <code>dd</code> - Tag (2-stellig)<br>
+                    <code>HH</code> - Stunde (24h), <code>hh</code> - Stunde (12h)<br>
+                    <code>mm</code> - Minute, <code>ss</code> - Sekunde
+                </div>
+
+                <h3>Zeitzone setzen</h3>
+                <div class="code-block">t = <span class="function">datetime</span>(<span class="string">"now"</span>);
+t.TimeZone = <span class="string">'Europe/Berlin'</span>;  <span class="comment">% Zeitzone festlegen</span></div>
+
+                <div class="interactive-section">
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Zeitzone:</label>
+                            <select id="timezone">
+                                <option value="0">UTC</option>
+                                <option value="1">Europe/Berlin (UTC+1)</option>
+                                <option value="-5">America/New_York (UTC-5)</option>
+                                <option value="9">Asia/Tokyo (UTC+9)</option>
+                            </select>
+                        </div>
+                        <button onclick="showTimezone()">Anzeigen</button>
+                    </div>
+                    <div class="result-display" id="timezoneResult"></div>
+                </div>
+            </div>
+
+            <!-- Formatierung Tab -->
+            <div id="formatierung" class="tab-content">
+                <h2>Formatierung von Datetime</h2>
+                <p>Die Darstellung von <code>datetime</code> kann flexibel angepasst werden.</p>
+
+                <h3>Häufige Formate</h3>
+                <div class="format-grid">
+                    <div class="format-example">
+                        <div class="format-code">dd.MM.yyyy</div>
+                        <div class="format-result" id="format1">31.12.2024</div>
+                    </div>
+                    <div class="format-example">
+                        <div class="format-code">yyyy-MM-dd</div>
+                        <div class="format-result" id="format2">2024-12-31</div>
+                    </div>
+                    <div class="format-example">
+                        <div class="format-code">dd.MM.yy HH:mm</div>
+                        <div class="format-result" id="format3">31.12.24 15:30</div>
+                    </div>
+                    <div class="format-example">
+                        <div class="format-code">HH:mm:ss</div>
+                        <div class="format-result" id="format4">15:30:45</div>
+                    </div>
+                    <div class="format-example">
+                        <div class="format-code">EEEE, dd. MMMM yyyy</div>
+                        <div class="format-result" id="format5">Dienstag, 31. Dezember 2024</div>
+                    </div>
+                    <div class="format-example">
+                        <div class="format-code">dd-MMM-yyyy</div>
+                        <div class="format-result" id="format6">31-Dez-2024</div>
+                    </div>
+                </div>
+
+                <div class="interactive-section">
+                    <h3>Eigenes Format testen</h3>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Format-String:</label>
+                            <select id="formatString">
+                                <option value="dd.MM.yyyy">dd.MM.yyyy</option>
+                                <option value="yyyy-MM-dd">yyyy-MM-dd</option>
+                                <option value="dd.MM.yyyy HH:mm:ss">dd.MM.yyyy HH:mm:ss</option>
+                                <option value="HH:mm">HH:mm</option>
+                                <option value="EEEE">EEEE (Wochentag)</option>
+                                <option value="MMMM yyyy">MMMM yyyy</option>
+                                <option value="yyyyMMdd">yyyyMMdd (kompakt)</option>
+                            </select>
+                        </div>
+                        <button onclick="applyFormat()">Format anwenden</button>
+                    </div>
+                    <div class="result-display" id="formatResult"></div>
+                    <div class="code-block" id="formatCode"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Format ändern:</strong><br>
+                    <code>t.Format = 'dd.MM.yyyy';</code> - Nur Anzeige ändert sich, Daten bleiben gleich!
+                </div>
+            </div>
+
+            <!-- Rechnen mit Zeiten Tab -->
+            <div id="rechnen" class="tab-content">
+                <h2>Rechnen mit Datum und Zeit</h2>
+                <p>MATLAB bietet die Typen <code>duration</code> und <code>calendarDuration</code> für Zeitberechnungen.</p>
+
+                <h3>Duration - Zeitspannen</h3>
+                <div class="code-block">t1 = <span class="function">datetime</span>(<span class="string">"now"</span>);
+t2 = t1 + <span class="function">hours</span>(5) + <span class="function">minutes</span>(30);  <span class="comment">% 5.5 Stunden später</span>
+
+dt = t2 - t1;  <span class="comment">% Differenz berechnen</span>
+
+<span class="comment">% Duration-Funktionen</span>
+<span class="function">years</span>(1)
+<span class="function">days</span>(7)
+<span class="function">hours</span>(24)
+<span class="function">minutes</span>(60)
+<span class="function">seconds</span>(3600)</div>
+
+                <div class="interactive-section">
+                    <h3>Zeitrechner</h3>
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Startdatum:</label>
+                            <input type="date" id="calcDate1" value="2024-01-01">
+                        </div>
+                        <div class="control-group">
+                            <label>Enddatum:</label>
+                            <input type="date" id="calcDate2" value="2024-12-31">
+                        </div>
+                        <button onclick="calculateDuration()">Differenz berechnen</button>
+                    </div>
+                    <div class="result-display" id="durationResult"></div>
+                </div>
+
+                <h3>Zeit hinzufügen</h3>
+                <div class="interactive-section">
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Ausgangsdatum:</label>
+                            <input type="date" id="baseDate" value="2024-01-01">
+                        </div>
+                        <div class="control-group">
+                            <label>Hinzufügen:</label>
+                            <input type="number" id="addValue" value="7" step="1">
+                        </div>
+                        <div class="control-group">
+                            <label>Einheit:</label>
+                            <select id="addUnit">
+                                <option value="days">Tage</option>
+                                <option value="weeks">Wochen</option>
+                                <option value="months">Monate</option>
+                                <option value="years">Jahre</option>
+                                <option value="hours">Stunden</option>
+                            </select>
+                        </div>
+                        <button onclick="addDuration()">Berechnen</button>
+                    </div>
+                    <div class="result-display" id="addResult"></div>
+                    <div class="code-block" id="addCode"></div>
+                </div>
+
+                <h3>dateshift - Datum verschieben</h3>
+                <div class="code-block">t = <span class="function">datetime</span>(<span class="string">"now"</span>);
+
+<span class="comment">% Zum Anfang/Ende verschieben</span>
+t2 = <span class="function">dateshift</span>(t, <span class="string">'start'</span>, <span class="string">'month'</span>);  <span class="comment">% Monatsanfang</span>
+t3 = <span class="function">dateshift</span>(t, <span class="string">'end'</span>, <span class="string">'month'</span>);    <span class="comment">% Monatsende</span>
+
+<span class="comment">% Zum nächsten Wochentag</span>
+t4 = <span class="function">dateshift</span>(t, <span class="string">'dayofweek'</span>, <span class="string">'Saturday'</span>);  <span class="comment">% Nächster Samstag</span></div>
+
+                <div class="info-box">
+                    <strong>Wichtige Funktionen:</strong><br>
+                    <code>hours(n)</code>, <code>days(n)</code>, <code>weeks(n)</code>, <code>years(n)</code> - Duration erstellen<br>
+                    <code>dateshift(t, 'start/end', 'unit')</code> - Zu Anfang/Ende verschieben<br>
+                    <code>isbetween(t, t1, t2)</code> - Prüft ob t zwischen t1 und t2 liegt<br>
+                    <code>eomday(year, month)</code> - Letzter Tag des Monats
+                </div>
+            </div>
+
+            <!-- Timetable Tab -->
+            <div id="timetable" class="tab-content">
+                <h2>Timetable - Zeitreihen</h2>
+                <p>Timetables sind spezielle Tables mit Zeitstempeln als Zeilen-Index.</p>
+
+                <div class="code-block"><span class="comment">% Timetable erstellen</span>
+Temp = [20; 22; 25; 23; 21; 19];
+times = (<span class="function">hours</span>(0):hours(4):hours(20))';
+TT = <span class="function">timetable</span>(times, Temp)
+
+<span class="comment">% Ausgabe:</span>
+<span class="comment">%     times    Temp</span>
+<span class="comment">%     _____    ____</span>
+<span class="comment">%     0 hr     20</span>
+<span class="comment">%     4 hr     22</span>
+<span class="comment">%     8 hr     25</span>
+<span class="comment">%     ...</span></div>
+
+                <h3>Timetable-Operationen</h3>
+                <div class="datetime-card">
+                    <h3>sortrows - Sortieren</h3>
+                    <div class="code-block"><span class="function">sortrows</span>(TT, <span class="string">"Temp"</span>, <span class="string">"descend"</span>)  <span class="comment">% Nach Temperatur absteigend</span></div>
+                </div>
+
+                <div class="datetime-card">
+                    <h3>retime - Zeitliche Neuabtastung</h3>
+                    <div class="code-block">newtimes = <span class="function">hours</span>(0):minutes(30):hours(23);
+TT2 = <span class="function">retime</span>(TT, newtimes, <span class="string">"linear"</span>);  <span class="comment">% Lineare Interpolation</span></div>
+                </div>
+
+                <div class="datetime-card">
+                    <h3>rmmissing / fillmissing - Fehlende Werte</h3>
+                    <div class="code-block">TT.Temp(3) = NaN;  <span class="comment">% Fehlenden Wert einfügen</span>
+
+<span class="function">rmmissing</span>(TT)  <span class="comment">% Zeile mit NaN entfernen</span>
+<span class="function">fillmissing</span>(TT, <span class="string">'linear'</span>)  <span class="comment">% NaN interpolieren</span></div>
+                </div>
+
+                <div class="interactive-section">
+                    <h3>Beispiel: Temperaturverlauf</h3>
+                    <div class="code-block" id="timetableExample"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Vorteile von Timetable:</strong><br>
+                    • Automatische Zeitachse für Plots<br>
+                    • Einfache Interpolation und Resampling<br>
+                    • Integrierte Funktionen für fehlende Werte<br>
+                    • Synchronisation mehrerer Zeitreihen
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-button');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('de-DE');
+            const dateStr = now.toLocaleDateString('de-DE', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            document.getElementById('currentTime').textContent = timeStr;
+            document.getElementById('currentDate').textContent = dateStr;
+
+            // Update format examples
+            const formats = {
+                'format1': now.toLocaleDateString('de-DE'),
+                'format2': now.toISOString().split('T')[0],
+                'format3': `${now.toLocaleDateString('de-DE').slice(0,8)} ${now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`,
+                'format4': now.toLocaleTimeString('de-DE'),
+                'format5': now.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                'format6': now.toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })
+            };
+
+            Object.entries(formats).forEach(([id, value]) => {
+                const elem = document.getElementById(id);
+                if (elem) elem.textContent = value;
+            });
+        }
+
+        function createDatetime() {
+            const date = document.getElementById('customDate').value;
+            const time = document.getElementById('customTime').value;
+
+            const [year, month, day] = date.split('-');
+            const [hour, minute] = time.split(':');
+
+            document.getElementById('customResult').textContent =
+                `MATLAB Code:\n` +
+                `t = datetime(${year}, ${month}, ${day}, ${hour}, ${minute}, 0)\n\n` +
+                `Ergebnis:\n` +
+                `t = ${day}.${month}.${year} ${hour}:${minute}:00`;
+        }
+
+        function showTimezone() {
+            const tz = parseFloat(document.getElementById('timezone').value);
+            const now = new Date();
+            const utc = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+            const tzDate = new Date(utc.getTime() + tz * 3600000);
+
+            const tzNames = {
+                '0': 'UTC',
+                '1': 'Europe/Berlin',
+                '-5': 'America/New_York',
+                '9': 'Asia/Tokyo'
+            };
+
+            document.getElementById('timezoneResult').textContent =
+                `Zeitzone: ${tzNames[tz]}\n` +
+                `Aktuelle Zeit: ${tzDate.toLocaleString('de-DE')}\n` +
+                `UTC: ${utc.toLocaleString('de-DE')}`;
+        }
+
+        function applyFormat() {
+            const format = document.getElementById('formatString').value;
+            const now = new Date();
+
+            let result;
+            switch(format) {
+                case 'dd.MM.yyyy':
+                    result = now.toLocaleDateString('de-DE');
+                    break;
+                case 'yyyy-MM-dd':
+                    result = now.toISOString().split('T')[0];
+                    break;
+                case 'dd.MM.yyyy HH:mm:ss':
+                    result = now.toLocaleString('de-DE');
+                    break;
+                case 'HH:mm':
+                    result = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                    break;
+                case 'EEEE':
+                    result = now.toLocaleDateString('de-DE', { weekday: 'long' });
+                    break;
+                case 'MMMM yyyy':
+                    result = now.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+                    break;
+                case 'yyyyMMdd':
+                    result = now.toISOString().split('T')[0].replace(/-/g, '');
+                    break;
+            }
+
+            document.getElementById('formatResult').textContent =
+                `Formatierte Ausgabe:\n${result}`;
+
+            document.getElementById('formatCode').textContent =
+                `t = datetime("now");\n` +
+                `t.Format = '${format}';`;
+        }
+
+        function calculateDuration() {
+            const date1 = new Date(document.getElementById('calcDate1').value);
+            const date2 = new Date(document.getElementById('calcDate2').value);
+
+            const diffMs = Math.abs(date2 - date1);
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            const diffWeeks = Math.floor(diffDays / 7);
+            const diffMonths = Math.floor(diffDays / 30.44);
+
+            document.getElementById('durationResult').textContent =
+                `Differenz:\n\n` +
+                `${diffDays} Tage\n` +
+                `${diffWeeks} Wochen\n` +
+                `ca. ${diffMonths} Monate\n\n` +
+                `MATLAB Code:\n` +
+                `dt = t2 - t1`;
+        }
+
+        function addDuration() {
+            const baseDate = new Date(document.getElementById('baseDate').value);
+            const value = parseInt(document.getElementById('addValue').value);
+            const unit = document.getElementById('addUnit').value;
+
+            const result = new Date(baseDate);
+
+            switch(unit) {
+                case 'days':
+                    result.setDate(result.getDate() + value);
+                    break;
+                case 'weeks':
+                    result.setDate(result.getDate() + value * 7);
+                    break;
+                case 'months':
+                    result.setMonth(result.getMonth() + value);
+                    break;
+                case 'years':
+                    result.setFullYear(result.getFullYear() + value);
+                    break;
+                case 'hours':
+                    result.setHours(result.getHours() + value);
+                    break;
+            }
+
+            document.getElementById('addResult').textContent =
+                `Ausgangsdatum: ${baseDate.toLocaleDateString('de-DE')}\n` +
+                `+ ${value} ${unit}\n` +
+                `= ${result.toLocaleDateString('de-DE')}`;
+
+            const unitFunc = unit === 'weeks' ? `days(${value * 7})` : `${unit}(${value})`;
+            document.getElementById('addCode').textContent =
+                `t1 = datetime(${baseDate.getFullYear()}, ${baseDate.getMonth() + 1}, ${baseDate.getDate()});\n` +
+                `t2 = t1 + ${unitFunc};`;
+        }
+
+        function initTimetableExample() {
+            const example =
+`% Temperaturmessungen alle 4 Stunden
+Temp = [18; 20; 23; 25; 24; 22; 19];
+times = (hours(0):hours(4):hours(24))';
+
+% Timetable erstellen
+TT = timetable(times, Temp);
+
+% Auf stündliche Werte interpolieren
+newtimes = hours(0):hours(1):hours(24);
+TT_hourly = retime(TT, newtimes, "linear");
+
+% Plotten
+plot(TT_hourly.times, TT_hourly.Temp)
+xlabel('Zeit')
+ylabel('Temperatur [°C]')`;
+
+            document.getElementById('timetableExample').textContent = example;
+        }
+
+        // Initialisierung
+        window.onload = function() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            createDatetime();
+            showTimezone();
+            applyFormat();
+            calculateDuration();
+            addDuration();
+            initTimetableExample();
+        };
+    </script>
+</body>
+</html>
